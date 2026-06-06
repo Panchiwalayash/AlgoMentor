@@ -1,0 +1,22 @@
+FROM python:3.12-slim
+
+WORKDIR /app
+
+ARG LIVEKIT_URL
+ARG LIVEKIT_API_KEY
+ARG LIVEKIT_API_SECRET
+ARG GROQ_API_KEY
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+ENV LIVEKIT_URL=$LIVEKIT_URL
+ENV LIVEKIT_API_KEY=$LIVEKIT_API_KEY
+ENV LIVEKIT_API_SECRET=$LIVEKIT_API_SECRET
+ENV GROQ_API_KEY=$GROQ_API_KEY
+
+EXPOSE 8080
+
+CMD ["python", "main.py", "start"]

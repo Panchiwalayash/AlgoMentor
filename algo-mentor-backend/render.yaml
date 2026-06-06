@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: algomentor-agent
+    runtime: docker
+    rootDir: algo-mentor-backend
+    dockerfilePath: ./Dockerfile
+    plan: free
+    envVars:
+      - key: LIVEKIT_URL
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false

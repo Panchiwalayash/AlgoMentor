@@ -1,0 +1,111 @@
+@keyframes voice-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.15;
+  }
+}
+
+@keyframes voice-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.voice-session {
+  background: radial-gradient(
+      ellipse 80% 60% at 50% -10%,
+      rgba(16, 185, 129, 0.12),
+      transparent
+    ),
+    radial-gradient(
+      ellipse 60% 40% at 80% 100%,
+      rgba(99, 102, 241, 0.1),
+      transparent
+    );
+}
+
+.voice-session-card {
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1.25rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+}
+
+.voice-orb-sm {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.voice-orb-loading {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  border-top-color: #34d399;
+  animation: voice-spin 0.8s linear infinite;
+}
+
+.voice-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 2px solid rgba(16, 185, 129, 0.35);
+  animation: voice-pulse 1.8s ease-out infinite;
+}
+
+.voice-ring-1 {
+  width: 5.5rem;
+  height: 5.5rem;
+}
+
+.voice-ring-2 {
+  width: 7rem;
+  height: 7rem;
+  animation-delay: 0.4s;
+}
+
+.voice-mic-btn {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.voice-mic-btn:hover {
+  transform: scale(1.05);
+}
+
+.voice-mic-btn--live {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.35);
+}
+
+.voice-mic-btn--muted {
+  background: linear-gradient(135deg, #6366f1, #4f46e5);
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.35);
+}
+
+.voice-mic-btn--speaking {
+  box-shadow: 0 8px 40px rgba(16, 185, 129, 0.45);
+}
+
+.voice-controls {
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.6), transparent);
+}

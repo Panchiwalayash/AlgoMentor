@@ -1,0 +1,6 @@
+livekit-agents~=1.5.17
+livekit-plugins-groq~=1.5.17
+livekit-plugins-openai~=1.5.17
+livekit-plugins-silero~=1.5.17
+python-dotenv
+pydantic>=2.10
