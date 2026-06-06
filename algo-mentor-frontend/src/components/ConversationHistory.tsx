@@ -1,6 +1,6 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { Bot, User } from "lucide-react";
-import { Conversation } from "../lib/types";
+import { Conversation } from "@/lib/types";
 
 interface ConversationHistoryProps {
   conversations: Conversation[];
@@ -84,24 +84,38 @@ function MessageBubble({
   );
 }
 
-export const ConversationHistory = ({
+export function ConversationHistory({
   conversations,
   liveUserText = "",
   liveAgentText = "",
   isUserSpeaking = false,
   isAgentSpeaking = false,
-}: ConversationHistoryProps) => {
+}: ConversationHistoryProps) {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [conversations, liveUserText, liveAgentText]);
 
+  const lastUserMessage = [...conversations]
+    .reverse()
+    .find((conv) => conv.speaker === "User")
+    ?.message;
+  const lastAgentMessage = [...conversations]
+    .reverse()
+    .find((conv) => conv.speaker === "AlgoMentor")
+    ?.message;
+
+  const showLiveUser =
+    liveUserText.trim().length > 0 && liveUserText.trim() !== lastUserMessage;
+  const showLiveAgent =
+    liveAgentText.trim().length > 0 && liveAgentText.trim() !== lastAgentMessage;
+
   const hasContent =
-    conversations.length > 0 || liveUserText.trim() || liveAgentText.trim();
+    conversations.length > 0 || showLiveUser || showLiveAgent;
 
   return (
-    <div className="flex-1 overflow-y-auto px-4 py-6 space-y-5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+    <div className="voice-chat-scroll flex-1 overflow-y-auto px-4 py-3 space-y-4">
       {!hasContent ? (
         <div className="flex flex-col items-center justify-center h-full min-h-[280px] text-center px-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-400/20 to-cyan-500/20 border border-emerald-500/20 flex items-center justify-center mb-4">
@@ -123,7 +137,16 @@ export const ConversationHistory = ({
             />
           ))}
 
-          {liveAgentText.trim() && (
+          {showLiveUser && (
+            <MessageBubble
+              speaker="user"
+              message={liveUserText.trim()}
+              isLive
+              isSpeaking={isUserSpeaking}
+            />
+          )}
+
+          {showLiveAgent && (
             <MessageBubble
               speaker="agent"
               message={liveAgentText}
@@ -132,18 +155,9 @@ export const ConversationHistory = ({
             />
           )}
 
-          {liveUserText.trim() && (
-            <MessageBubble
-              speaker="user"
-              message={liveUserText}
-              isLive
-              isSpeaking={isUserSpeaking}
-            />
-          )}
-
           <div ref={bottomRef} />
         </>
       )}
     </div>
   );
-};
+}

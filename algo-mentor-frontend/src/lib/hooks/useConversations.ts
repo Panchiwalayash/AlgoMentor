@@ -1,17 +1,24 @@
 import { useState, useCallback } from "react";
-import { Conversation } from "../types";
+import { Conversation, Speaker } from "@/lib/types";
 
-export const useConversations = () => {
+export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
 
-  const addConversation = useCallback((speaker: string, message: string) => {
-    if (!message.trim()) return;
+  const addConversation = useCallback((speaker: Speaker, message: string) => {
+    const trimmed = message.trim();
+    if (!trimmed) return;
+
     setConversations((prev) => {
+      const last = prev[prev.length - 1];
+      if (last?.speaker === speaker && last.message === trimmed) {
+        return prev;
+      }
+
       return [
         ...prev,
         {
           speaker,
-          message: message.trim(),
+          message: trimmed,
           timestamp: new Date().toISOString(),
         },
       ];
@@ -27,4 +34,4 @@ export const useConversations = () => {
     addConversation,
     resetConversations,
   };
-};
+}

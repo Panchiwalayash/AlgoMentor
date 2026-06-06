@@ -38,10 +38,14 @@
   backdrop-filter: blur(20px);
 }
 
-.voice-orb-sm {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 0.75rem;
+.voice-session-header {
+  background: rgb(15 23 42);
+}
+
+.voice-orb-xs {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.5rem;
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 182, 212, 0.2));
   border: 1px solid rgba(16, 185, 129, 0.25);
   display: flex;
@@ -107,5 +111,14 @@
 }
 
 .voice-controls {
-  background: linear-gradient(to top, rgba(2, 6, 23, 0.6), transparent);
+  background: rgb(15 23 42);
+}
+
+.voice-chat-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.voice-chat-scroll::-webkit-scrollbar {
+  display: none;
 }

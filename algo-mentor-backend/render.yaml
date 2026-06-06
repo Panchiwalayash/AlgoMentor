@@ -14,3 +14,17 @@ services:
         sync: false
       - key: GROQ_API_KEY
         sync: false
+      - key: CARTESIA_API_KEY
+        sync: false
+      - key: TTS_PROVIDER
+        value: livekit
+      - key: GROQ_LLM_MODEL
+        value: llama-3.1-8b-instant
+      - key: GROQ_LLM_MAX_TOKENS
+        value: "120"
+      - key: TURN_MIN_DELAY
+        value: "0.2"
+      - key: TURN_MAX_DELAY
+        value: "0.6"
+      - key: SILERO_SAMPLE_RATE
+        value: "8000"

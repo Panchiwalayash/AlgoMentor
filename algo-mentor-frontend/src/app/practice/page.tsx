@@ -1,17 +1,15 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { SessionShell } from "@/components/SessionShell";
 import { VoiceAITutor } from "@/components/VoiceAITutor";
 
-export default function TopicSession() {
+export default function FreePracticePage() {
   const router = useRouter();
-  const params = useParams();
-  const courseId = params.courseId as string;
 
   return (
     <SessionShell onBack={() => router.push("/course")}>
-      <VoiceAITutor courseId={courseId} isCourseMode selectedDay={1} />
+      <VoiceAITutor />
     </SessionShell>
   );
 }

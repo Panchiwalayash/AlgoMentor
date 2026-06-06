@@ -1,19 +1,19 @@
+export type Speaker = "User" | "AlgoMentor";
+
 export interface Conversation {
-  speaker: string;
+  speaker: Speaker;
   message: string;
   timestamp: string;
 }
 
 export interface ActiveRoomProps {
-  addConversation: (speaker: string, message: string) => void;
   courseId?: string;
   isCourseMode?: boolean;
-  selectedDay?: number;
-  isReset: boolean;
-  setIsRest: (value: boolean) => void;
   conversations: Conversation[];
-  onEndSession: () => void;
+  isReset: boolean;
   isStoring?: boolean;
+  addConversation: (speaker: Speaker, message: string) => void;
+  onEndSession: () => void;
 }
 
 export interface VoiceTutorProps {

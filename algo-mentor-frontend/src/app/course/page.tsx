@@ -3,53 +3,9 @@
 import { useRouter } from "next/navigation";
 import { CourseCard } from "@/components/CourseCard";
 import { Header } from "@/components/Header";
+import { TOPICS } from "@/lib/topics";
 
-const TOPICS = [
-  {
-    id: "binary-search",
-    title: "Binary Search",
-    description: "Master the O(log n) search pattern on sorted data",
-    difficulty: "Beginner",
-    totalDays: 5,
-  },
-  {
-    id: "linked-lists",
-    title: "Linked Lists",
-    description: "Pointer manipulation, reversal, and cycle detection",
-    difficulty: "Beginner",
-    totalDays: 5,
-  },
-  {
-    id: "trees",
-    title: "Trees & BST",
-    description: "Traversals, recursion, and binary search trees",
-    difficulty: "Intermediate",
-    totalDays: 5,
-  },
-  {
-    id: "two-pointers",
-    title: "Two Pointers",
-    description: "Sliding window and pair-sum techniques on arrays",
-    difficulty: "Beginner",
-    totalDays: 5,
-  },
-  {
-    id: "graphs",
-    title: "Graphs BFS/DFS",
-    description: "Explore graphs with breadth-first and depth-first search",
-    difficulty: "Intermediate",
-    totalDays: 5,
-  },
-  {
-    id: "dynamic-programming",
-    title: "Dynamic Programming",
-    description: "Break problems into overlapping subproblems",
-    difficulty: "Advanced",
-    totalDays: 5,
-  },
-];
-
-const TopicSelection = () => {
+export default function TopicSelection() {
   const router = useRouter();
 
   return (
@@ -69,17 +25,25 @@ const TopicSelection = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <CourseCard
+            course={{
+              id: "free-practice",
+              title: "Free Practice",
+              description: "Open-ended DSA practice — no topic locked in",
+              difficulty: "Any level",
+              totalDays: 1,
+            }}
+            onClick={() => router.push("/practice")}
+          />
           {TOPICS.map((topic) => (
             <CourseCard
               key={topic.id}
               course={topic}
-              onClick={() => router.push(`course/${topic.id}`)}
+              onClick={() => router.push(`/course/${topic.id}`)}
             />
           ))}
         </div>
       </main>
     </div>
   );
-};
-
-export default TopicSelection;
+}

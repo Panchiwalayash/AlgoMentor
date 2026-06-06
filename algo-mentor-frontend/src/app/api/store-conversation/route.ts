@@ -11,9 +11,7 @@ function getSupabase() {
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
   if (!url || !key) {
-    throw new Error(
-      "Supabase credentials not configured. Set SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY (or NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)."
-    );
+    throw new Error("Supabase credentials are not configured.");
   }
 
   return createClient(url, key);
@@ -30,11 +28,8 @@ export async function POST(req: Request) {
       );
     }
 
-    const transformedMessages = (conversations as Conversation[]).map((conv) => ({
-      role:
-        conv.speaker === "AlgoMentor" || conv.speaker === "AI Tutor"
-          ? "assistant"
-          : "user",
+    const messages = (conversations as Conversation[]).map((conv) => ({
+      role: conv.speaker === "AlgoMentor" ? "assistant" : "user",
       content: conv.message,
     }));
 
@@ -42,16 +37,13 @@ export async function POST(req: Request) {
     const { error } = await supabase.from("conversations").insert({
       topic_id: courseId,
       session_day: selectedDay ?? 1,
-      messages: transformedMessages,
+      messages,
     });
 
-    if (error) {
-      throw error;
-    }
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error storing conversations:", error);
+  } catch {
     return NextResponse.json(
       { error: "Failed to store conversations" },
       { status: 500 }

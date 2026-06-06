@@ -6,7 +6,8 @@ type TopicId =
   | "trees"
   | "two-pointers"
   | "graphs"
-  | "dynamic-programming";
+  | "dynamic-programming"
+  | "free-practice";
 
 interface TopicThumbnailProps {
   topicId: string;
@@ -53,6 +54,12 @@ const THEMES: Record<
     to: "#b45309",
     glow: "rgba(251, 191, 36, 0.35)",
     accent: "#fbbf24",
+  },
+  "free-practice": {
+    from: "#1e1b4b",
+    to: "#311042",
+    glow: "rgba(236, 72, 153, 0.35)",
+    accent: "#ec4899",
   },
 };
 
@@ -307,6 +314,50 @@ function DynamicProgrammingArt({ accent }: { accent: string }) {
   );
 }
 
+function FreePracticeArt({ accent }: { accent: string }) {
+  return (
+    <>
+      {/* Code Braces */}
+      <text x={14} y={68} fill="rgba(255,255,255,0.18)" fontSize={28} fontFamily="monospace" fontWeight="bold">
+        {"{"}
+      </text>
+      <text x={114} y={68} fill="rgba(255,255,255,0.18)" fontSize={28} fontFamily="monospace" fontWeight="bold">
+        {"}"}
+      </text>
+
+      {/* Central Microphone / Orb */}
+      <circle cx={72} cy={56} r={18} fill="rgba(255,255,255,0.06)" stroke={accent} strokeWidth={2} strokeDasharray="2 2" />
+      <circle cx={72} cy={56} r={12} fill={accent} opacity={0.25} />
+      <path
+        d="M68 48 C68 46, 76 46, 76 48 L76 58 C76 60, 68 60, 68 58 Z"
+        fill="none"
+        stroke={accent}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <path
+        d="M64 54 C64 62, 80 62, 80 54"
+        fill="none"
+        stroke={accent}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+      <path
+        d="M72 61 L72 67 M66 67 L78 67"
+        stroke={accent}
+        strokeWidth={2}
+        strokeLinecap="round"
+      />
+
+      {/* Soundwave Bars */}
+      <rect x={44} y={50} width={2.5} height={12} rx={1.25} fill="rgba(255,255,255,0.3)" />
+      <rect x={49} y={44} width={2.5} height={24} rx={1.25} fill={accent} />
+      <rect x={92} y={50} width={2.5} height={12} rx={1.25} fill="rgba(255,255,255,0.3)" />
+      <rect x={97} y={44} width={2.5} height={24} rx={1.25} fill={accent} />
+    </>
+  );
+}
+
 const ART: Record<TopicId, React.FC<{ accent: string }>> = {
   "binary-search": BinarySearchArt,
   "linked-lists": LinkedListArt,
@@ -314,6 +365,7 @@ const ART: Record<TopicId, React.FC<{ accent: string }>> = {
   "two-pointers": TwoPointersArt,
   graphs: GraphArt,
   "dynamic-programming": DynamicProgrammingArt,
+  "free-practice": FreePracticeArt,
 };
 
 export const TopicThumbnail: React.FC<TopicThumbnailProps> = ({

@@ -1,19 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   RoomAudioRenderer,
+  useConnectionState,
   useLocalParticipant,
-  useRemoteParticipants,
   useMaybeRoomContext,
 } from "@livekit/components-react";
-import { RoomEvent, Participant, TranscriptionSegment } from "livekit-client";
+import { ConnectionState } from "livekit-client";
 import { Mic, MicOff, PhoneOff, Sparkles } from "lucide-react";
-import { ActiveRoomProps } from "@/lib/types";
+import { ActiveRoomProps, Speaker } from "@/lib/types";
 import { useLiveTranscript } from "@/lib/hooks/useLiveTranscript";
+import { useAgentParticipant } from "@/lib/hooks/useAgentParticipant";
 import { topicTitle } from "@/lib/topics";
-import { ConversationHistory } from "./ConversationHistory";
+import { ConversationHistory } from "@/components/ConversationHistory";
 import "@/styles/activeRoom.css";
 
-export const ActiveRoom = ({
+export function ActiveRoom({
   courseId,
   isCourseMode,
   addConversation,
@@ -21,27 +22,28 @@ export const ActiveRoom = ({
   conversations,
   onEndSession,
   isStoring,
-}: ActiveRoomProps) => {
+}: ActiveRoomProps) {
   const { localParticipant, isMicrophoneEnabled } = useLocalParticipant();
-  const remoteParticipants = useRemoteParticipants();
+  const agentParticipant = useAgentParticipant();
   const room = useMaybeRoomContext();
+  const connectionState = useConnectionState();
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
-  const [isBotSpeaking, setIsBotSpeaking] = useState(false);
+  const [isAgentSpeaking, setIsAgentSpeaking] = useState(false);
+
+  const agentJoined = Boolean(agentParticipant);
+  const isConnecting = connectionState !== ConnectionState.Connected;
+  const waitingForAgent =
+    connectionState === ConnectionState.Connected && !agentJoined;
 
   const onFinalTranscript = useCallback(
-    (speaker: string, text: string) => {
+    (speaker: Speaker, text: string) => {
       addConversation(speaker, text);
     },
     [addConversation]
   );
 
-  const {
-    liveUserText,
-    liveAgentText,
-    handleUserTranscription,
-    handleAgentTranscription,
-    flushLive,
-  } = useLiveTranscript(onFinalTranscript);
+  const { liveUserText, liveAgentText, flushLive } =
+    useLiveTranscript(onFinalTranscript);
 
   useEffect(() => {
     if (!isReset) return;
@@ -49,15 +51,14 @@ export const ActiveRoom = ({
   }, [isReset, flushLive]);
 
   useEffect(() => {
-    const botParticipant = remoteParticipants[0];
-    if (!botParticipant) return undefined;
+    if (!agentParticipant) return undefined;
 
-    const handleBotSpeaking = (speaking: boolean) => setIsBotSpeaking(speaking);
-    botParticipant.on("isSpeakingChanged", handleBotSpeaking);
+    const handleSpeaking = (speaking: boolean) => setIsAgentSpeaking(speaking);
+    agentParticipant.on("isSpeakingChanged", handleSpeaking);
     return () => {
-      botParticipant.off("isSpeakingChanged", handleBotSpeaking);
+      agentParticipant.off("isSpeakingChanged", handleSpeaking);
     };
-  }, [remoteParticipants]);
+  }, [agentParticipant]);
 
   useEffect(() => {
     if (!localParticipant) return undefined;
@@ -70,32 +71,6 @@ export const ActiveRoom = ({
   }, [localParticipant]);
 
   useEffect(() => {
-    if (!room || !localParticipant) return undefined;
-
-    const handleTranscription = (
-      transcription: TranscriptionSegment[],
-      participant?: Participant
-    ) => {
-      if (participant?.identity === localParticipant.identity) {
-        handleUserTranscription(transcription);
-      } else if (participant?.identity === remoteParticipants[0]?.identity) {
-        handleAgentTranscription(transcription);
-      }
-    };
-
-    room.on(RoomEvent.TranscriptionReceived, handleTranscription);
-    return () => {
-      room.off(RoomEvent.TranscriptionReceived, handleTranscription);
-    };
-  }, [
-    room,
-    localParticipant,
-    remoteParticipants,
-    handleUserTranscription,
-    handleAgentTranscription,
-  ]);
-
-  useEffect(() => {
     const initMic = async () => {
       if (room?.state === "connected" && localParticipant) {
         await localParticipant.setMicrophoneEnabled(true);
@@ -105,7 +80,7 @@ export const ActiveRoom = ({
   }, [room?.state, localParticipant]);
 
   const title = isCourseMode ? topicTitle(courseId) : "Free Practice";
-  const statusLabel = isBotSpeaking
+  const statusLabel = isAgentSpeaking
     ? "AlgoMentor is speaking…"
     : isUserSpeaking
       ? "Listening to you…"
@@ -114,51 +89,60 @@ export const ActiveRoom = ({
         : "Microphone muted";
 
   return (
-    <div className="voice-session flex flex-col h-full w-full max-w-3xl mx-auto">
+    <div className="voice-session flex flex-col h-full min-h-0 w-full max-w-3xl mx-auto">
       <div className="voice-session-card flex flex-col flex-1 min-h-0 overflow-hidden">
-        {/* Session header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/5">
-          <div className="flex items-center gap-3">
-            <div className="voice-orb-sm">
-              <Sparkles className="w-4 h-4 text-emerald-300" />
+        <div className="voice-session-header shrink-0 border-b border-white/5">
+          <div className="flex items-center justify-between gap-3 px-4 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="voice-orb-xs shrink-0">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-300" />
+              </div>
+              <div className="min-w-0 leading-tight">
+                <p className="text-sm font-medium text-white truncate">{title}</p>
+                <p className="text-[11px] text-slate-400 truncate">{statusLabel}</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-sm font-semibold text-white">{title}</h2>
-              <p className="text-xs text-slate-400">{statusLabel}</p>
-            </div>
-          </div>
-          <div
-            className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full ${
-              isMicrophoneEnabled
-                ? "bg-emerald-500/15 text-emerald-400"
-                : "bg-amber-500/15 text-amber-400"
-            }`}
-          >
-            <span
-              className={`w-1.5 h-1.5 rounded-full ${
-                isMicrophoneEnabled ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+            <div
+              className={`shrink-0 flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full ${
+                isMicrophoneEnabled
+                  ? "bg-emerald-500/15 text-emerald-400"
+                  : "bg-amber-500/15 text-amber-400"
               }`}
-            />
-            {isMicrophoneEnabled ? "Live" : "Muted"}
+            >
+              <span
+                className={`w-1.5 h-1.5 rounded-full ${
+                  isMicrophoneEnabled ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                }`}
+              />
+              {isMicrophoneEnabled ? "Live" : "Muted"}
+            </div>
           </div>
+
+          {(isConnecting || waitingForAgent) && (
+            <div className="px-4 py-1.5 border-t border-white/5">
+              <p className="text-[11px] text-slate-400 text-center truncate">
+                {isConnecting
+                  ? "Joining voice room…"
+                  : "Waiting for AlgoMentor…"}
+              </p>
+            </div>
+          )}
         </div>
 
-        {/* Chat */}
         <ConversationHistory
           conversations={conversations}
           liveUserText={liveUserText}
           liveAgentText={liveAgentText}
           isUserSpeaking={isUserSpeaking}
-          isAgentSpeaking={isBotSpeaking}
+          isAgentSpeaking={isAgentSpeaking}
         />
 
         <RoomAudioRenderer />
 
-        {/* Voice controls */}
-        <div className="voice-controls px-6 py-5 border-t border-white/5">
-          <div className="flex flex-col items-center gap-4">
+        <div className="voice-controls shrink-0 px-4 py-3 border-t border-white/5">
+          <div className="flex flex-col items-center gap-3">
             <div className="relative flex items-center justify-center">
-              {(isUserSpeaking || isBotSpeaking) && (
+              {(isUserSpeaking || isAgentSpeaking) && (
                 <>
                   <span className="voice-ring voice-ring-1" />
                   <span className="voice-ring voice-ring-2" />
@@ -213,6 +197,4 @@ export const ActiveRoom = ({
       </div>
     </div>
   );
-};
-
-export default ActiveRoom;
+}
