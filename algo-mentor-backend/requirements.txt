@@ -4,3 +4,7 @@ livekit-plugins-cartesia~=1.5.17
 livekit-plugins-silero~=1.5.17
 python-dotenv
 pydantic>=2.10
+chromadb>=0.4.24
+sentence-transformers>=2.2.2
+pyyaml>=6.0
+

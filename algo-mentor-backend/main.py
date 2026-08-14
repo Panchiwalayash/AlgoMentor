@@ -1,8 +1,18 @@
 import json
 import logging
 import os
+import sys
+
+if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
 
 from dotenv import load_dotenv
+
 from livekit.agents import (
     Agent,
     AgentServer,
@@ -23,11 +33,14 @@ try:
 except ImportError:
     cartesia = None
 
+from health_server import start_keepalive_thread
 from prompts import get_prompt
+from rag_manager import get_rag_manager
 
 load_dotenv()
 
 logging.getLogger("livekit.agents").setLevel(logging.INFO)
+
 
 
 async def get_participant_metadata(ctx: JobContext) -> dict:
@@ -109,14 +122,21 @@ class AlgoMentorAgent(Agent):
         )
 
 
-server = AgentServer()
+agent_port = int(os.getenv("LIVEKIT_AGENT_PORT", "7861"))
+server = AgentServer(
+    host="0.0.0.0",
+    port=agent_port,
+    num_idle_processes=2,
+)
 
 
 def prewarm(proc: JobProcess) -> None:
     proc.userdata["vad"] = load_vad()
+    proc.userdata["rag_manager"] = get_rag_manager()
 
 
 server.setup_fnc = prewarm
+
 
 
 @server.rtc_session()
@@ -124,8 +144,13 @@ async def entrypoint(ctx: JobContext) -> None:
     await ctx.connect(auto_subscribe=AutoSubscribe.AUDIO_ONLY)
 
     metadata = await get_participant_metadata(ctx)
-    prompt = get_prompt(metadata.get("context", "voice-ai"), metadata)
+    rag_manager = ctx.proc.userdata.get("rag_manager") or get_rag_manager()
+    prompt = get_prompt(metadata.get("context", "voice-ai"), metadata, rag_manager=rag_manager)
+
     groq_key = os.getenv("GROQ_API_KEY")
+
+
+
 
     session = AgentSession(
         vad=ctx.proc.userdata["vad"],
@@ -159,4 +184,12 @@ async def entrypoint(ctx: JobContext) -> None:
 
 
 if __name__ == "__main__":
+    print("[AlgoMentor] Initializing RAG index and HTTP Keep-Alive server...", flush=True)
+    try:
+        get_rag_manager().build_index()
+        print("[AlgoMentor] RAG index initialized successfully.", flush=True)
+    except Exception as e:
+        print(f"[AlgoMentor] Warning: RAG index build error: {e}", flush=True)
+
+    start_keepalive_thread()
     cli.run_app(server)

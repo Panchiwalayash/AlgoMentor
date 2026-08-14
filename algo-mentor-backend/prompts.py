@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 TOPICS = {
     "binary-search": {"title": "Binary Search", "difficulty": "beginner"},
@@ -8,17 +8,6 @@ TOPICS = {
     "two-pointers": {"title": "Two Pointers", "difficulty": "beginner"},
     "dynamic-programming": {"title": "Dynamic Programming", "difficulty": "advanced"},
 }
-
-
-def _format_conversation_history(conversation_history: List[Dict]) -> str:
-    if not conversation_history:
-        return ""
-    lines = []
-    for day_convo in conversation_history:
-        lines.append(f"\nDay {day_convo.get('day')} Conversation:")
-        for msg in day_convo.get("messages", []):
-            lines.append(f"{msg.get('role', '')}: {msg.get('content', '')}")
-    return "\n".join(lines)
 
 
 class TutorPrompt:
@@ -42,31 +31,40 @@ class DSAPrompt:
         self,
         topic_title: str,
         difficulty: str,
-        conversation_history: Optional[List[Dict]] = None,
-        total_days: int = 1,
+        topic_overview: str = "",
+        grounded_context: str = "",
     ):
         self.topic_title = topic_title
         self.difficulty = difficulty
-        self.conversation_history = conversation_history or []
-        self.total_days = total_days
-        self.current_day = len(self.conversation_history) + 1 if conversation_history else 1
+        self.topic_overview = topic_overview
+        self.grounded_context = grounded_context
 
     def get_system_prompt(self) -> str:
-        conversation_context = _format_conversation_history(self.conversation_history)
+        overview_section = ""
+        if self.topic_overview:
+            overview_section = f"""
+Topic Grounded Overview:
+{self.topic_overview}
+"""
+
+        context_section = ""
+        if self.grounded_context:
+            context_section = f"""
+Retrieved Course Material Snippets:
+{self.grounded_context}
+"""
+
         return f"""You are AlgoMentor, a patient voice tutor helping college students master data structures and algorithms.
 
 Current topic: {self.topic_title} ({self.difficulty} level)
-Session {self.current_day} of {self.total_days}
-
-Previous sessions:
-{conversation_context if conversation_context else "This is the student's first session on this topic."}
-
+{overview_section}{context_section}
 Teaching style:
-1. Socratic method — explain the core idea in plain language, walk through a tiny example, then ask the student a question before moving on.
-2. Voice-friendly — keep each response to 3-5 short sentences. Never dump long code blocks; describe logic verbally and offer to go step by step.
-3. Build intuition first — why does this approach work? When should a student reach for it?
-4. Connect to interviews — mention one real pattern or mistake students make on this topic.
-5. If the student is stuck, give a hint, not the full answer. If they get it right, praise briefly and go deeper.
+1. Grounding — Use the provided Topic Grounded Overview and Course Material Snippets as your source of truth for intuition, edge cases, and code templates.
+2. Socratic method — explain the core idea in plain language, walk through a tiny example, then ask the student a question before moving on.
+3. Voice-friendly — keep each response to 3-5 short sentences. Never dump long code blocks; describe logic verbally and offer to go step by step.
+4. Build intuition first — why does this approach work? When should a student reach for it?
+5. Connect to interviews — mention real patterns, complexity, or edge cases from the retrieved material.
+6. If the student is stuck, give a hint, not the full answer. If they get it right, praise briefly and go deeper.
 
 Rules:
 - Only teach {self.topic_title} and closely related DSA concepts.
@@ -74,18 +72,13 @@ Rules:
 - Use Python for any code mentions unless the student asks for another language."""
 
     def get_initial_greeting(self) -> str:
-        if not self.conversation_history:
-            return (
-                f"Hey! I'm AlgoMentor, and today we're tackling {self.topic_title}. "
-                "What do you already know about this topic, or would you like me to start from the basics?"
-            )
         return (
-            f"Welcome back! Last time we worked on {self.topic_title}. "
-            "What do you remember, or should we pick up where we left off?"
+            f"Hey! I'm AlgoMentor, and today we're tackling {self.topic_title}. "
+            "What do you already know about this topic, or would you like me to start from the basics?"
         )
 
 
-def get_prompt(context_type: str, metadata: Dict):
+def get_prompt(context_type: str, metadata: Dict, rag_manager: Optional[Any] = None):
     if context_type != "course":
         return TutorPrompt()
 
@@ -94,9 +87,24 @@ def get_prompt(context_type: str, metadata: Dict):
         course_id,
         {"title": course_id.replace("-", " ").title(), "difficulty": "beginner"},
     )
+
+    topic_overview = ""
+    grounded_context_str = ""
+
+    if rag_manager and course_id:
+        topic_overview = rag_manager.get_topic_overview(course_id)
+        
+        user_query = metadata.get("userQuery", "overview intuition code edge cases")
+        chunks = rag_manager.retrieve_context(course_id, user_query, top_k=3)
+        if chunks:
+            formatted_chunks = []
+            for c in chunks:
+                formatted_chunks.append(f"--- Section: {c['section_title']} ---\n{c['text']}")
+            grounded_context_str = "\n\n".join(formatted_chunks)
+
     return DSAPrompt(
         topic_title=topic["title"],
         difficulty=topic["difficulty"],
-        conversation_history=metadata.get("conversations", []),
-        total_days=metadata.get("totalDays", 1),
+        topic_overview=topic_overview,
+        grounded_context=grounded_context_str,
     )
