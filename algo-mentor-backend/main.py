@@ -1,10 +1,12 @@
+import asyncio
 import json
 import logging
 import os
 import sys
+import threading
+from aiohttp import web
 
 if sys.stdout and hasattr(sys.stdout, "reconfigure"):
-
     try:
         sys.stdout.reconfigure(encoding="utf-8")
         sys.stderr.reconfigure(encoding="utf-8")
@@ -33,7 +35,6 @@ try:
 except ImportError:
     cartesia = None
 
-from health_server import start_keepalive_thread
 from prompts import get_prompt
 from rag_manager import get_rag_manager
 
@@ -156,7 +157,7 @@ async def entrypoint(ctx: JobContext) -> None:
         vad=ctx.proc.userdata["vad"],
         stt=build_stt(groq_key),
         llm=groq.LLM(
-            model=os.getenv("GROQ_LLM_MODEL", "llama-3.1-8b-instant"),
+            model=os.getenv("GROQ_LLM_MODEL", "llama-3.3-70b-versatile"),
             api_key=groq_key,
             temperature=_float_env("GROQ_LLM_TEMPERATURE", 0.6),
             max_completion_tokens=_int_env("GROQ_LLM_MAX_TOKENS", 120),
@@ -183,6 +184,33 @@ async def entrypoint(ctx: JobContext) -> None:
     await greeting.wait_for_playout()
 
 
+async def _health_handler(request):
+    return web.json_response({
+        "status": "online",
+        "app": "AlgoMentor DSA Voice Mentor"
+    })
+
+
+def start_keepalive_server():
+    def _run():
+        port = int(os.getenv("PORT", "7860"))
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        app = web.Application()
+        app.router.add_get("/", _health_handler)
+        app.router.add_get("/health", _health_handler)
+        app.router.add_get("/ping", _health_handler)
+        runner = web.AppRunner(app)
+        loop.run_until_complete(runner.setup())
+        site = web.TCPSite(runner, "0.0.0.0", port)
+        loop.run_until_complete(site.start())
+        print(f"[AlgoMentor Keep-Alive] HTTP server running on http://0.0.0.0:{port}", flush=True)
+        loop.run_forever()
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+
+
 if __name__ == "__main__":
     print("[AlgoMentor] Initializing RAG index and HTTP Keep-Alive server...", flush=True)
     try:
@@ -191,5 +219,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"[AlgoMentor] Warning: RAG index build error: {e}", flush=True)
 
-    start_keepalive_thread()
+    start_keepalive_server()
     cli.run_app(server)
+

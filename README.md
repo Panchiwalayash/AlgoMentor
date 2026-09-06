@@ -1,3 +1,13 @@
+---
+title: AlgoMentor
+emoji: 🎓
+colorFrom: blue
+colorTo: indigo
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # AlgoMentor
 
 Voice-first Data Structures & Algorithms (DSA) tutoring for college students. Talk through coding problems with an AI mentor grounded in curated topic material — not generic LLM guesses.
@@ -7,7 +17,7 @@ Voice-first Data Structures & Algorithms (DSA) tutoring for college students. Ta
 ## Architecture
 
 - **Frontend** ([`algo-mentor-frontend/`](algo-mentor-frontend/)) — Next.js app on Vercel. Mints LiveKit voice tokens and stores conversation sessions in Supabase.
-- **Backend Agent** ([`algo-mentor-backend/`](algo-mentor-backend/)) — Python LiveKit worker hosted on Hugging Face Spaces. Uses Groq (STT/LLM/TTS) + local HuggingFace embeddings + ChromaDB for RAG context retrieval.
+- **Backend Agent** ([`algo-mentor-backend/`](algo-mentor-backend/)) — Python LiveKit worker containerized with Docker. Uses Groq (STT/LLM/TTS) + local sentence-transformers + ChromaDB for RAG context retrieval.
 - **LiveKit Cloud** — WebRTC voice rooms connecting browser and agent.
 - **Supabase** — PostgreSQL database storing session logs and conversation history.
 
@@ -105,7 +115,7 @@ Open your browser or run curl to inspect the exact RAG overview and context snip
 ```bash
 curl http://localhost:7860/api/topic/binary-search
 ```
-*(On production: `https://nikhil8780-algomentor.hf.space/api/topic/binary-search`)*
+*(On production server: `https://<your-backend-domain>/api/topic/binary-search`)*
 
 ### 3. In-Session Voice Testing
 Ask the voice mentor topic-specific questions grounded in your course material:
@@ -117,27 +127,27 @@ The AI mentor will respond using the exact intuition, edge cases, and code templ
 
 ---
 
-## 24/7 Deployment & UptimeRobot Setup
+## 24/7 Deployment & Keep-Alive Setup
 
 | Service | Platform | Root Directory |
 |---------|----------|----------------|
 | Frontend | [Vercel](https://vercel.com) | `algo-mentor-frontend/` |
-| Backend Agent | [Hugging Face Spaces](https://huggingface.co/spaces/Nikhil8780/AlgoMentor) | `algo-mentor-backend/` (Dockerfile) |
+| Backend Agent | Docker Container / Cloud Server | `algo-mentor-backend/` (`Dockerfile`) |
 | Voice Infra | [LiveKit Cloud](https://cloud.livekit.io) | — |
 | Database | [Supabase](https://supabase.com) | — |
 
-### Preventing Hugging Face Spaces Auto-Sleep
-To keep your Hugging Face Space active 24/7 without going idle:
+### Server Keep-Alive & Health Monitoring
+To keep your backend service active 24/7 without going idle:
 
 1. Create a free account on [UptimeRobot](https://uptimerobot.com/).
 2. Add a new monitor:
    - **Monitor Type**: `HTTP(s)`
-   - **Friendly Name**: `AlgoMentor HF Keepalive`
-   - **URL**: `https://nikhil8780-algomentor.hf.space/health` *(or `/api/topic/binary-search`)*
+   - **Friendly Name**: `AlgoMentor Backend Keepalive`
+   - **URL**: `https://<your-backend-domain>/health` *(or `/api/topic/binary-search`)*
    - **Monitoring Interval**: `5 minutes`
 3. Click **Create Monitor**.
 
-Every 5 minutes, UptimeRobot hits port 7860, receives `HTTP 200 OK` with live RAG topic info, keeping your space active permanently.
+Every 5 minutes, UptimeRobot hits port 7860, receives `HTTP 200 OK` with live RAG topic info, keeping your server warm and active permanently.
 
 ---
 
