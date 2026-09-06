@@ -30,8 +30,7 @@ export default function TopicSelection() {
               id: "free-practice",
               title: "Free Practice",
               description: "Open-ended DSA practice — no topic locked in",
-              difficulty: "Any level",
-              totalDays: 1,
+              difficulty: "Any level"
             }}
             onClick={() => router.push("/practice")}
           />

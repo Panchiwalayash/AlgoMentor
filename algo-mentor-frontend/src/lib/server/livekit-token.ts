@@ -3,7 +3,6 @@ import { AccessToken, VideoGrant } from "livekit-server-sdk";
 interface CourseSessionMetadata {
   context: "course";
   courseId: string;
-  totalDays: number;
   timestamp: string;
 }
 
@@ -21,7 +20,6 @@ function getLiveKitCredentials() {
 
 export async function createLiveKitSessionToken(options?: {
   courseId?: string;
-  totalDays?: number;
 }) {
   const { apiKey, apiSecret, url } = getLiveKitCredentials();
   const roomName = Math.random().toString(36).slice(2);
@@ -32,11 +30,10 @@ export async function createLiveKitSessionToken(options?: {
     ttl: 60 * 60,
     metadata: options?.courseId
       ? JSON.stringify({
-          context: "course",
-          courseId: options.courseId,
-          totalDays: options.totalDays ?? 1,
-          timestamp: new Date().toISOString(),
-        } satisfies CourseSessionMetadata)
+        context: "course",
+        courseId: options.courseId,
+        timestamp: new Date().toISOString(),
+      } satisfies CourseSessionMetadata)
       : undefined,
   });
 

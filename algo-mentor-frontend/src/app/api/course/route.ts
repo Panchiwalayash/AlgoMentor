@@ -4,13 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
   try {
     const courseId = request.nextUrl.searchParams.get("courseId") ?? undefined;
-    const totalDays = parseInt(
-      request.nextUrl.searchParams.get("total_days") ?? "1",
-      10
-    );
-
     const session = await createLiveKitSessionToken(
-      courseId ? { courseId, totalDays } : undefined
+      courseId ? { courseId } : undefined
     );
 
     return NextResponse.json(session);

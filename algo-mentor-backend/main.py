@@ -157,7 +157,7 @@ async def entrypoint(ctx: JobContext) -> None:
         vad=ctx.proc.userdata["vad"],
         stt=build_stt(groq_key),
         llm=groq.LLM(
-            model=os.getenv("GROQ_LLM_MODEL", "llama-3.3-70b-versatile"),
+            model=os.getenv("GROQ_LLM_MODEL", "openai/gpt-oss-20b"),
             api_key=groq_key,
             temperature=_float_env("GROQ_LLM_TEMPERATURE", 0.6),
             max_completion_tokens=_int_env("GROQ_LLM_MAX_TOKENS", 120),
