@@ -129,6 +129,7 @@ server = AgentServer(
     port=agent_port,
     num_idle_processes=_int_env("NUM_IDLE_PROCESSES", 1),
     job_memory_warn_mb=_float_env("MEMORY_WARN_MB", 800.0),
+    initialize_process_timeout=_float_env("INITIALIZE_PROCESS_TIMEOUT", 60.0),
 )
 
 
