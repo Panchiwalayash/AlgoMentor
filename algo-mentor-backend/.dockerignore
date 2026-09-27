@@ -1,0 +1,10 @@
+.venv/
+venv/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+.git/
+.gitignore
+.env
+rag_storage/

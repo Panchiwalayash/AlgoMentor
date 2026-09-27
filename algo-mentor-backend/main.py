@@ -127,7 +127,8 @@ agent_port = int(os.getenv("LIVEKIT_AGENT_PORT", "7861"))
 server = AgentServer(
     host="0.0.0.0",
     port=agent_port,
-    num_idle_processes=2,
+    num_idle_processes=_int_env("NUM_IDLE_PROCESSES", 1),
+    memory_warn_mb=_float_env("MEMORY_WARN_MB", 800.0),
 )
 
 

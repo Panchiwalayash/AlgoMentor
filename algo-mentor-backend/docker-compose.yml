@@ -1,0 +1,17 @@
+services:
+  algomentor-agent:
+    build: .
+    container_name: algomentor-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "7860:7860"
+    volumes:
+      - ./rag_storage:/app/rag_storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7860/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
