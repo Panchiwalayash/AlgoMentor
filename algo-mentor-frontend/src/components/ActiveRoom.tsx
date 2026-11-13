@@ -42,8 +42,14 @@ export function ActiveRoom({
     [addConversation]
   );
 
-  const { liveUserText, liveAgentText, flushLive } =
-    useLiveTranscript(onFinalTranscript);
+  const { liveUserText, liveAgentText, flushLive } = useLiveTranscript(
+    onFinalTranscript,
+    {
+      isMicrophoneEnabled,
+      isUserSpeaking,
+      isAgentSpeaking,
+    }
+  );
 
   useEffect(() => {
     if (!isReset) return;

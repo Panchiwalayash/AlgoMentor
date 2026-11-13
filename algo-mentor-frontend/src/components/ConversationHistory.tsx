@@ -107,12 +107,37 @@ export function ConversationHistory({
     ?.message;
 
   const showLiveUser =
-    liveUserText.trim().length > 0 && liveUserText.trim() !== lastUserMessage;
+    liveUserText.trim().length > 0 &&
+    liveUserText.trim().toLowerCase() !== lastUserMessage?.trim().toLowerCase();
   const showLiveAgent =
-    liveAgentText.trim().length > 0 && liveAgentText.trim() !== lastAgentMessage;
+    liveAgentText.trim().length > 0 &&
+    liveAgentText.trim().toLowerCase() !== lastAgentMessage?.trim().toLowerCase();
 
   const hasContent =
     conversations.length > 0 || showLiveUser || showLiveAgent;
+
+  const lastSpeaker = conversations[conversations.length - 1]?.speaker;
+  const isAgentTurnNext = !lastSpeaker || lastSpeaker === "User";
+
+  const liveAgentBubble = showLiveAgent ? (
+    <MessageBubble
+      key="live-agent"
+      speaker="agent"
+      message={liveAgentText}
+      isLive
+      isSpeaking={isAgentSpeaking}
+    />
+  ) : null;
+
+  const liveUserBubble = showLiveUser ? (
+    <MessageBubble
+      key="live-user"
+      speaker="user"
+      message={liveUserText.trim()}
+      isLive
+      isSpeaking={isUserSpeaking}
+    />
+  ) : null;
 
   return (
     <div className="voice-chat-scroll flex-1 overflow-y-auto px-4 py-3 space-y-4">
@@ -137,22 +162,16 @@ export function ConversationHistory({
             />
           ))}
 
-          {showLiveUser && (
-            <MessageBubble
-              speaker="user"
-              message={liveUserText.trim()}
-              isLive
-              isSpeaking={isUserSpeaking}
-            />
-          )}
-
-          {showLiveAgent && (
-            <MessageBubble
-              speaker="agent"
-              message={liveAgentText}
-              isLive
-              isSpeaking={isAgentSpeaking}
-            />
+          {isAgentTurnNext ? (
+            <>
+              {liveAgentBubble}
+              {liveUserBubble}
+            </>
+          ) : (
+            <>
+              {liveUserBubble}
+              {liveAgentBubble}
+            </>
           )}
 
           <div ref={bottomRef} />

@@ -20,6 +20,12 @@ export const TOPICS: Course[] = [
     difficulty: "Intermediate"
   },
   {
+    id: "heaps",
+    title: "Heaps & Priority Queues",
+    description: "Binary heaps, Floyd's O(n) build-heap, and priority queues",
+    difficulty: "Intermediate",
+  },
+  {
     id: "two-pointers",
     title: "Two Pointers",
     description: "Sliding window and pair-sum techniques on arrays",

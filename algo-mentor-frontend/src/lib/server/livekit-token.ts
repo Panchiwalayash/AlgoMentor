@@ -1,8 +1,11 @@
 import { AccessToken, VideoGrant } from "livekit-server-sdk";
 
-interface CourseSessionMetadata {
-  context: "course";
-  courseId: string;
+export interface CourseSessionMetadata {
+  context: "course" | "voice-ai";
+  courseId?: string;
+  userId?: string;
+  userName?: string;
+  historySummary?: string;
   timestamp: string;
 }
 
@@ -20,21 +23,31 @@ function getLiveKitCredentials() {
 
 export async function createLiveKitSessionToken(options?: {
   courseId?: string;
+  userId?: string;
+  userName?: string;
+  historySummary?: string;
 }) {
   const { apiKey, apiSecret, url } = getLiveKitCredentials();
   const roomName = Math.random().toString(36).slice(2);
   const expiration = new Date(Date.now() + 60 * 60 * 1000);
 
+  const metadata: CourseSessionMetadata = {
+    context: options?.courseId ? "course" : "voice-ai",
+    courseId: options?.courseId,
+    userId: options?.userId,
+    userName: options?.userName,
+    historySummary: options?.historySummary,
+    timestamp: new Date().toISOString(),
+  };
+
+  const identity = options?.userName
+    ? `${options.userName.replace(/\s+/g, "_")}_${Math.random().toString(36).slice(2, 6)}`
+    : `student_${Math.random().toString(36).slice(2, 8)}`;
+
   const token = new AccessToken(apiKey, apiSecret, {
-    identity: "human_user",
+    identity,
     ttl: 60 * 60,
-    metadata: options?.courseId
-      ? JSON.stringify({
-        context: "course",
-        courseId: options.courseId,
-        timestamp: new Date().toISOString(),
-      } satisfies CourseSessionMetadata)
-      : undefined,
+    metadata: JSON.stringify(metadata),
   });
 
   const grant: VideoGrant = {

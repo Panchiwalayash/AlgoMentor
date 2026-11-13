@@ -15,6 +15,7 @@ node_modules/
 .next/
 out/
 .vercel
+*.tsbuildinfo
 
 # OS / IDE
 .DS_Store
@@ -23,3 +24,13 @@ Thumbs.db
 .vscode/
 
 AlgoMentor/
+
+# Antigravity & AI Agent Local Customizations (Do Not Push)
+.agents/
+.agent/
+_agents/
+_agent/
+AGENTS.md
+agent.md
+SKILL.md
+skill.md

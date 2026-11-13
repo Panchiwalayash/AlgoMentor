@@ -19,7 +19,17 @@ function getSupabase() {
 
 export async function POST(req: Request) {
   try {
-    const { conversations, selectedDay, courseId } = await req.json();
+    const { conversations, selectedDay, courseId, userId, userEmail, userName, isGuest } =
+      await req.json();
+
+    // Guest Mode: strictly do not store conversation history
+    if (isGuest || !userId) {
+      return NextResponse.json({
+        success: true,
+        saved: false,
+        message: "Guest session finished. Conversation history was not persisted.",
+      });
+    }
 
     if (!Array.isArray(conversations) || conversations.length === 0) {
       return NextResponse.json(
@@ -31,21 +41,37 @@ export async function POST(req: Request) {
     const messages = (conversations as Conversation[]).map((conv) => ({
       role: conv.speaker === "AlgoMentor" ? "assistant" : "user",
       content: conv.message,
+      timestamp: conv.timestamp,
     }));
 
+    // Generate a short 1-sentence recap for session resumption
+    const lastUserMsg = [...conversations].reverse().find((c) => c.speaker === "User")?.message || "";
+    const summary = lastUserMsg
+      ? `Practiced ${courseId || "DSA"}. Last student focus: "${lastUserMsg.slice(0, 120)}..."`
+      : `Practiced ${courseId || "DSA"} with ${messages.length} messages.`;
+
     const supabase = getSupabase();
-    const { error } = await supabase.from("conversations").insert({
-      topic_id: courseId,
+    const { data, error } = await supabase.from("conversations").insert({
+      user_id: userId,
+      user_email: userEmail,
+      user_name: userName,
+      topic_id: courseId || "free-practice",
       session_day: selectedDay ?? 1,
       messages,
-    });
+      summary,
+    }).select();
 
-    if (error) throw error;
+    if (error) {
+      console.error("[AlgoMentor Store Conversation] Supabase error:", error);
+      throw error;
+    }
 
-    return NextResponse.json({ success: true });
-  } catch {
+    return NextResponse.json({ success: true, saved: true, data });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Failed to store conversations";
+    console.error("[AlgoMentor Store Conversation Error]:", message);
     return NextResponse.json(
-      { error: "Failed to store conversations" },
+      { error: "Failed to store conversations", details: message },
       { status: 500 }
     );
   }

@@ -454,6 +454,76 @@ def rob_house(idx: int, nums_tuple: tuple) -> int:
 1. **Climbing Stairs / House Robber**: 1D DP transitions where the current state depends directly on the previous 1 or 2 steps.
 2. **Longest Common Subsequence (LCS)**: 2D grid DP evaluating matching vs. non-matching character transitions across two strings.
 3. **0/1 Knapsack & Partition Equal Subset Sum**: 2D grid DP evaluating a "pick vs. leave" item choice with capacity constraints.
+""",
+    "heaps.md": """---
+id: heaps
+title: Heaps & Priority Queues
+difficulty: intermediate
+category: Tree-Based Data Structures
+---
+
+# Heaps & Priority Queues Overview
+
+A Heap is a specialized complete binary tree that satisfies the Heap Property. In a Min-Heap, every parent is smaller than or equal to its children; in a Max-Heap, every parent is greater than or equal to its children.
+
+---
+
+## Key Intuition & Concept
+
+- **Array Representation**: Stored in a contiguous array without pointers: left child = 2*i + 1, right child = 2*i + 2, parent = (i - 1) // 2.
+- **Core Operations**: Peek is O(1). Insert (heappush) is O(log N). Extract (heappop) is O(log N).
+- **CRITICAL: Building a Heap is O(N), NOT O(N log N)**:
+  Calling `heapify` (Floyd's bottom-up sift-down algorithm) on an unsorted array takes strictly linear O(N) time.
+  Why? Half the nodes are leaves with 0 swaps needed, a quarter are at height 1 with at most 1 swap, and only 1 node is at the root. The mathematical summation N * sum(h / 2^(h+1)) converges to O(N).
+  Repeatedly pushing N elements into an empty heap takes O(N log N), but bottom-up heapify is O(N).
+
+---
+
+## Code Template (Python)
+
+```python
+import heapq
+
+# O(N) In-Place Heap Construction (Floyd's Algorithm)
+nums = [9, 4, 7, 1, 3, 2, 8]
+heapq.heapify(nums)  # O(N) time!
+
+# Push: O(log N)
+heapq.heappush(nums, 5)
+
+# Pop Min: O(log N)
+min_elem = heapq.heappop(nums)
+
+# Max-heap: Invert values (-val)
+max_heap = [-x for x in nums]
+heapq.heapify(max_heap)
+max_elem = -heapq.heappop(max_heap)
+```
+
+---
+
+## Edge Cases & Common Pitfalls
+
+1. **Build Heap Complexity**: Building a heap from an array in-place via heapify is O(N), NEVER O(N log N).
+2. **Heaps are not sorted**: Only the root is guaranteed minimal/maximal.
+3. **Min-Heap Default**: Python heapq is a min-heap by default. Negate values for max-heap.
+
+---
+
+## Complexity Analysis
+
+- **Build Heap (heapify)**: O(N) time, O(1) space in-place.
+- **Peek**: O(1) time.
+- **Push / Pop**: O(log N) time.
+- **Heap Sort**: O(N log N) time.
+
+---
+
+## Top Interview Problems
+
+1. **Top K Frequent Elements / Kth Largest Element**: Maintain a min-heap of size K in O(N log K).
+2. **Find Median from Data Stream**: Balance two heaps (max-heap for lower half, min-heap for upper half).
+3. **Merge K Sorted Lists**: Use a size-K min-heap to merge streams in O(N log K).
 """
 }
 

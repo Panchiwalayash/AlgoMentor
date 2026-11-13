@@ -4,6 +4,7 @@ type TopicId =
   | "binary-search"
   | "linked-lists"
   | "trees"
+  | "heaps"
   | "two-pointers"
   | "graphs"
   | "dynamic-programming"
@@ -36,6 +37,12 @@ const THEMES: Record<
     to: "#166534",
     glow: "rgba(74, 222, 128, 0.35)",
     accent: "#4ade80",
+  },
+  heaps: {
+    from: "#78350f",
+    to: "#b45309",
+    glow: "rgba(245, 158, 11, 0.4)",
+    accent: "#fbbf24",
   },
   "two-pointers": {
     from: "#1e3a8a",
@@ -358,10 +365,74 @@ function FreePracticeArt({ accent }: { accent: string }) {
   );
 }
 
+function HeapArt({ accent }: { accent: string }) {
+  // Min-Heap structure: Root (1), Left (3), Right (6), Leaves (5, 9, 8)
+  const nodes = [
+    { cx: 72, cy: 26, r: 10, val: "1", isMin: true },
+    { cx: 46, cy: 56, r: 8, val: "3", isMin: false },
+    { cx: 98, cy: 56, r: 8, val: "6", isMin: false },
+    { cx: 32, cy: 86, r: 7, val: "5", isMin: false },
+    { cx: 60, cy: 86, r: 7, val: "9", isMin: false },
+    { cx: 86, cy: 86, r: 7, val: "8", isMin: false },
+  ];
+  const edges = [
+    [0, 1],
+    [0, 2],
+    [1, 3],
+    [1, 4],
+    [2, 5],
+  ];
+  return (
+    <>
+      {edges.map(([a, b]) => (
+        <line
+          key={`heap-edge-${a}-${b}`}
+          x1={nodes[a].cx}
+          y1={nodes[a].cy + nodes[a].r * 0.4}
+          x2={nodes[b].cx}
+          y2={nodes[b].cy - nodes[b].r * 0.4}
+          stroke="rgba(255,255,255,0.35)"
+          strokeWidth={1.8}
+          strokeDasharray={a === 0 ? "none" : "2 2"}
+        />
+      ))}
+      {nodes.map((node, i) => (
+        <g key={`heap-node-${i}`}>
+          <circle
+            cx={node.cx}
+            cy={node.cy}
+            r={node.r}
+            fill={node.isMin ? accent : "rgba(15, 23, 42, 0.85)"}
+            stroke={node.isMin ? "#ffffff" : accent}
+            strokeWidth={node.isMin ? 2 : 1.5}
+          />
+          <text
+            x={node.cx}
+            y={node.cy + 3.5}
+            textAnchor="middle"
+            fill={node.isMin ? "#0f172a" : "#ffffff"}
+            fontSize={node.r * 1.1}
+            fontFamily="monospace"
+            fontWeight="bold"
+          >
+            {node.val}
+          </text>
+        </g>
+      ))}
+      {/* O(n) Heapify Badge */}
+      <rect x={12} y={16} width={34} height={14} rx={4} fill="rgba(0,0,0,0.4)" stroke={accent} strokeWidth={1} />
+      <text x={29} y={26} textAnchor="middle" fill={accent} fontSize={8} fontFamily="monospace" fontWeight="bold">
+        O(n)
+      </text>
+    </>
+  );
+}
+
 const ART: Record<TopicId, React.FC<{ accent: string }>> = {
   "binary-search": BinarySearchArt,
   "linked-lists": LinkedListArt,
   trees: TreeArt,
+  heaps: HeapArt,
   "two-pointers": TwoPointersArt,
   graphs: GraphArt,
   "dynamic-programming": DynamicProgrammingArt,

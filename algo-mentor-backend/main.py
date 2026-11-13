@@ -75,7 +75,7 @@ def load_vad() -> silero.VAD:
 
     return silero.VAD.load(
         sample_rate=sample_rate,  # type: ignore[arg-type]
-        min_silence_duration=_float_env("SILERO_MIN_SILENCE", 0.4),
+        min_silence_duration=_float_env("SILERO_MIN_SILENCE", 0.65),
         min_speech_duration=_float_env("SILERO_MIN_SPEECH", 0.05),
     )
 
@@ -167,8 +167,8 @@ async def entrypoint(ctx: JobContext) -> None:
         tts=build_tts(groq_key),
         turn_handling={
             "endpointing": {
-                "min_delay": _float_env("TURN_MIN_DELAY", 0.3),
-                "max_delay": _float_env("TURN_MAX_DELAY", 1.0),
+                "min_delay": _float_env("TURN_MIN_DELAY", 0.5),
+                "max_delay": _float_env("TURN_MAX_DELAY", 1.2),
             },
             "preemptive_generation": {"enabled": True},
         },
