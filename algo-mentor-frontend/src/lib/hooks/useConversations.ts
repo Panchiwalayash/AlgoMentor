@@ -1,31 +1,22 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback } from "react";
 import { Conversation, Speaker } from "@/lib/types";
 
 export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const lastSpeakerRef = useRef<Speaker | null>(null);
-  const lastTimestampRef = useRef<number>(0);
 
   const addConversation = useCallback((speaker: Speaker, message: string) => {
     const trimmed = message.trim();
     if (!trimmed) return;
 
     setConversations((prev) => {
-      const now = Date.now();
-
-      // Prevent duplicate or progressive chunk fragmentation
       const last = prev[prev.length - 1];
+
+      // Defensive check: if extension or exact match from same speaker, update in-place
       if (last && last.speaker === speaker) {
         const lastMsg = last.message.trim().toLowerCase();
         const newMsg = trimmed.toLowerCase();
 
-        // 1. Exact duplicate
-        if (lastMsg === newMsg) {
-          return prev;
-        }
-
-        // 2. The new message is an extension/continuation of the previous message
-        // (common with streaming STT/TTS transcript segments)
+        if (lastMsg === newMsg) return prev;
         if (newMsg.startsWith(lastMsg) || newMsg.includes(lastMsg)) {
           const updated = [...prev];
           updated[updated.length - 1] = {
@@ -33,20 +24,11 @@ export function useConversations() {
             message: trimmed,
             timestamp: new Date().toISOString(),
           };
-          lastTimestampRef.current = now;
           return updated;
         }
-
-        // 3. The new message is shorter/contained in the previous message
-        if (lastMsg.startsWith(newMsg) || lastMsg.includes(newMsg)) {
-          return prev;
-        }
+        if (lastMsg.startsWith(newMsg) || lastMsg.includes(newMsg)) return prev;
       }
 
-      lastSpeakerRef.current = speaker;
-      lastTimestampRef.current = now;
-
-      // Strictly append-only: once a message is added, it is final and never mutated
       return [
         ...prev,
         {
@@ -59,8 +41,6 @@ export function useConversations() {
   }, []);
 
   const resetConversations = useCallback(() => {
-    lastSpeakerRef.current = null;
-    lastTimestampRef.current = 0;
     setConversations([]);
   }, []);
 
