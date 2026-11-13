@@ -63,24 +63,21 @@ create policy "Users can insert their own profile"
 -- Conversations Policies:
 drop policy if exists "Allow insert for authenticated and anon" on conversations;
 drop policy if exists "Users can view their own conversations" on conversations;
-create policy "Users can view their own conversations"
+drop policy if exists "Allow select for authenticated and anon" on conversations;
+create policy "Allow select for authenticated and anon"
   on conversations for select
-  using (
-    auth.uid() = user_id or user_id is null
-  );
+  using (true);
 
 drop policy if exists "Users can insert conversations" on conversations;
-create policy "Users can insert conversations"
+create policy "Allow insert for authenticated and anon"
   on conversations for insert
-  with check (
-    auth.uid() = user_id or user_id is null
-  );
+  with check (true);
 
 drop policy if exists "Users can delete their own conversations" on conversations;
 create policy "Users can delete their own conversations"
   on conversations for delete
   using (
-    auth.uid() = user_id
+    auth.uid() = user_id or user_id is null
   );
 
 -- Function and trigger to auto-create profile on Supabase auth.users signup

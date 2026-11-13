@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "@/components/Header";
 import { useAuth } from "@/lib/context/AuthContext";
+import { getSupabaseBrowserClient } from "@/lib/supabase";
 import { TOPICS, topicTitle } from "@/lib/topics";
 import {
   History,
@@ -57,8 +58,31 @@ export default function HistoryPage() {
 
         const res = await fetch(`/api/conversations?${params.toString()}`);
         const data = await res.json();
-        if (data.success) {
-          setConversations(data.conversations || []);
+        if (data.success && Array.isArray(data.conversations) && data.conversations.length > 0) {
+          setConversations(data.conversations);
+        } else {
+          // Direct fallback using Supabase browser client
+          try {
+            const supabase = getSupabaseBrowserClient();
+            let query = supabase
+              .from("conversations")
+              .select("id, topic_id, session_day, messages, summary, created_at")
+              .eq("user_id", user.id)
+              .order("created_at", { ascending: false });
+
+            if (selectedTopic !== "all") {
+              query = query.eq("topic_id", selectedTopic);
+            }
+
+            const { data: clientRows, error: clientErr } = await query.limit(30);
+            if (!clientErr && clientRows && clientRows.length > 0) {
+              setConversations(clientRows);
+            } else if (data.success) {
+              setConversations(data.conversations || []);
+            }
+          } catch {
+            if (data.success) setConversations(data.conversations || []);
+          }
         }
       } catch (err) {
         console.error("Failed to load history:", err);
