@@ -7,7 +7,6 @@ import { ActiveRoom } from "@/components/ActiveRoom";
 import { useConversations } from "@/lib/hooks/useConversations";
 import { Conversation, VoiceTutorProps } from "@/lib/types";
 import { useAuth } from "@/lib/context/AuthContext";
-import { ShieldAlert, CheckCircle2, Sparkles } from "lucide-react";
 import "@/styles/activeRoom.css";
 
 const TOTAL_DAYS = 1;
@@ -45,7 +44,7 @@ export function VoiceAITutor({
   selectedDay,
 }: VoiceTutorProps) {
   const router = useRouter();
-  const { user, username, openAuthModal } = useAuth();
+  const { user, username } = useAuth();
   const [token, setToken] = useState<string | null>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [isStoring, setIsStoring] = useState(false);
@@ -162,43 +161,6 @@ export function VoiceAITutor({
 
   return (
     <div className="flex flex-col flex-1 w-full h-[calc(100vh-3.5rem)] min-h-0 px-4 pb-4 pt-2">
-      {/* Top Banner: Guest Notice vs. Authenticated Persistence Status */}
-      <div className="mb-2 flex items-center justify-between px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 text-xs">
-        {user ? (
-          <div className="flex items-center gap-2 text-emerald-400">
-            <CheckCircle2 className="w-4 h-4 shrink-0" />
-            <span>
-              Signed in as <strong className="font-semibold text-white">{username}</strong> — Session will be persistently saved.
-            </span>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center gap-2 text-amber-300">
-              <ShieldAlert className="w-4 h-4 shrink-0 text-amber-400" />
-              <span>
-                <strong>Guest Mode:</strong> This conversation will <span className="underline decoration-amber-400/60 font-semibold">not be saved</span> to history.
-              </span>
-            </div>
-            <button
-              onClick={() => openAuthModal("signup")}
-              className="ml-3 px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-medium flex items-center gap-1.5 transition-colors"
-            >
-              <Sparkles className="w-3 h-3 text-emerald-400" />
-              Sign In to Save Progress
-            </button>
-          </div>
-        )}
-
-        {user && (
-          <button
-            onClick={() => router.push("/history")}
-            className="text-slate-400 hover:text-white transition-colors underline underline-offset-2"
-          >
-            View Past Sessions
-          </button>
-        )}
-      </div>
-
       <LiveKitRoom
         token={token}
         serverUrl={url!}
