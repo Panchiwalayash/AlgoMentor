@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/context/AuthContext";
 import { X, Mail, Lock, User as UserIcon, CheckCircle2, AlertCircle, ArrowRight, Sparkles, RefreshCw } from "lucide-react";
 
@@ -17,6 +18,7 @@ export function AuthModal() {
     pendingVerificationEmail,
   } = useAuth();
 
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -49,6 +51,8 @@ export function AuthModal() {
 
     if (!res.success) {
       setErrorMsg(res.error || "Failed to sign in. Please check your credentials.");
+    } else {
+      router.push("/course");
     }
   };
 
@@ -76,6 +80,7 @@ export function AuthModal() {
       setSuccessMsg(`Verification email dispatched to ${email}! Please verify before logging in.`);
     } else {
       setSuccessMsg("Account created and signed in successfully!");
+      router.push("/course");
     }
   };
 
@@ -355,7 +360,10 @@ export function AuthModal() {
         <div className="mt-5 pt-4 border-t border-slate-800/80 flex flex-col items-center gap-2">
           <button
             type="button"
-            onClick={continueAsGuest}
+            onClick={() => {
+              continueAsGuest();
+              router.push("/course");
+            }}
             className="text-xs text-slate-400 hover:text-slate-200 underline underline-offset-4 transition-colors"
           >
             Or explore AlgoMentor directly as Guest (Sessions won&apos;t be stored)

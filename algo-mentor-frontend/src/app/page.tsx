@@ -16,6 +16,7 @@ import {
   Lock,
   Layers,
   ChevronRight,
+  History,
 } from "lucide-react";
 
 export default function HomePage() {
@@ -67,34 +68,57 @@ export default function HomePage() {
             AlgoMentor guides you to correct answers using pedagogical scaffolding rather than dumping code solutions. Speak your algorithmic intuition out loud with vector-grounded notes and persistent session memory.
           </p>
 
-          {/* Primary Action Buttons: Guest Mode vs. Authenticated Persistence */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto">
-            {/* Action 1: Direct Guest Access */}
-            <button
-              onClick={handleStartGuest}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-100 font-semibold text-sm transition-all hover:scale-[1.02] shadow-xl flex items-center justify-center gap-2.5 group"
-            >
-              <Mic className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-              <span>Try Directly as Guest</span>
-              <span className="text-[10px] text-slate-400 font-normal border-l border-slate-700 pl-2">
-                No Login
-              </span>
-            </button>
+          {/* Primary Action Buttons: Logged In vs. Guest Mode */}
+          {user ? (
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-md mx-auto">
+              <button
+                onClick={() => router.push("/course")}
+                className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2.5"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Resume Practice as {username}</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
 
-            {/* Action 2: Authenticated Access with Persistent Progress */}
-            <button
-              onClick={handleStartAuth}
-              className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2.5"
-            >
-              <Sparkles className="w-4 h-4" />
-              <span>{user ? `Resume as ${username}` : "Sign In to Save Progress"}</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
-          </div>
+              <button
+                onClick={() => router.push("/history")}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-200 font-semibold text-sm transition-all hover:scale-[1.02] shadow-xl flex items-center justify-center gap-2"
+              >
+                <History className="w-4 h-4 text-violet-400" />
+                <span>View Session History</span>
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-lg mx-auto">
+                {/* Action 1: Direct Guest Access */}
+                <button
+                  onClick={handleStartGuest}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-700/80 text-slate-100 font-semibold text-sm transition-all hover:scale-[1.02] shadow-xl flex items-center justify-center gap-2.5 group"
+                >
+                  <Mic className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
+                  <span>Try Directly as Guest</span>
+                  <span className="text-[10px] text-slate-400 font-normal border-l border-slate-700 pl-2">
+                    No Login
+                  </span>
+                </button>
 
-          <p className="text-xs text-slate-500 mt-4">
-            Guest sessions are ephemeral. Sign in to retain transcripts and resume topics seamlessly.
-          </p>
+                {/* Action 2: Authenticated Access with Persistent Progress */}
+                <button
+                  onClick={handleStartAuth}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white font-semibold text-sm transition-all hover:scale-[1.02] shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Sign In to Save Progress</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-500 mt-4">
+                Guest sessions are ephemeral. Sign in to retain transcripts and resume topics seamlessly.
+              </p>
+            </>
+          )}
         </div>
       </section>
 
@@ -168,99 +192,141 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Guest Mode vs. Authenticated Persistence Breakdown */}
+      {/* Practice Mode Options: Logged In vs. Guest Mode */}
       <section className="py-16 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-white mb-2">
-              Choose How You Want to Practice
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-400">
-              AlgoMentor supports both instant guest access and full authenticated student tracking.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Option A: Guest Mode */}
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col justify-between">
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-semibold">
-                    Guest Mode
-                  </span>
-                  <span className="text-xs text-slate-500">Zero Signup</span>
+          {user ? (
+            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-slate-950 p-8 shadow-xl shadow-emerald-500/10">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
+                      Student Account Active
+                    </span>
+                    <span className="text-xs text-slate-400">
+                      Logged in as <strong className="text-white">{username}</strong>
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-bold text-white mb-2">
+                    Persistent Learning & Session Memory Ready
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 max-w-xl leading-relaxed">
+                    All your voice interview sessions, problem discussions, and AI mentor hints are actively saved to Supabase under your profile.
+                  </p>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Instant Quick Practice</h3>
-                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                  Ideal for testing your microphone and doing a quick mock session without entering credentials.
-                </p>
-                <ul className="space-y-2 text-xs text-slate-300 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Real-time voice tutor connection</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>All 7 DSA curriculum topics & Free Practice</span>
-                  </li>
-                  <li className="flex items-center gap-2 text-slate-500">
-                    <Lock className="w-4 h-4 text-slate-500 shrink-0" />
-                    <span>Transcripts are ephemeral (not saved to database)</span>
-                  </li>
-                </ul>
-              </div>
 
-              <button
-                onClick={handleStartGuest}
-                className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2"
-              >
-                <span>Launch Direct Demo</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Option B: Authenticated Account */}
-            <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-slate-950 p-6 flex flex-col justify-between shadow-xl shadow-emerald-500/10 relative">
-              <div className="absolute -top-3 right-6 px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider">
-                Recommended
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
-                    Student Account
-                  </span>
-                  <span className="text-xs text-slate-400">Persistent Progress</span>
+                <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+                  <button
+                    onClick={() => router.push("/course")}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Browse All Topics</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => router.push("/history")}
+                    className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <History className="w-4 h-4 text-violet-400" />
+                    <span>View Transcripts</span>
+                  </button>
                 </div>
-                <h3 className="text-lg font-bold text-white mb-2">Persistent Progress & Memory</h3>
-                <p className="text-xs text-slate-400 mb-4 leading-relaxed">
-                  Persists your conversation history in PostgreSQL so AlgoMentor retains your learning context across sessions.
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="text-center mb-10">
+                <h2 className="text-2xl font-bold text-white mb-2">
+                  Choose How You Want to Practice
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400">
+                  AlgoMentor supports both instant guest access and full authenticated student tracking.
                 </p>
-                <ul className="space-y-2 text-xs text-slate-300 mb-6">
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Full conversation transcripts stored in Supabase</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Session resumption: AI mentor remembers where you left off</span>
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                    <span>Personalized learning history linked to your username</span>
-                  </li>
-                </ul>
               </div>
 
-              <button
-                onClick={handleStartAuth}
-                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
-              >
-                <span>{user ? "View My Practice Dashboard" : "Sign In / Register"}</span>
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Option A: Guest Mode */}
+                <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 flex flex-col justify-between">
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-300 border border-amber-500/20 text-xs font-semibold">
+                        Guest Mode
+                      </span>
+                      <span className="text-xs text-slate-500">Zero Signup</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2">Instant Quick Practice</h3>
+                    <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                      Ideal for testing your microphone and doing a quick mock session without entering credentials.
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-300 mb-6">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Real-time voice tutor connection</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>All 7 DSA curriculum topics & Free Practice</span>
+                      </li>
+                      <li className="flex items-center gap-2 text-slate-500">
+                        <Lock className="w-4 h-4 text-slate-500 shrink-0" />
+                        <span>Transcripts are ephemeral (not saved to database)</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={handleStartGuest}
+                    className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-colors flex items-center justify-center gap-2"
+                  >
+                    <span>Launch Direct Demo</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* Option B: Authenticated Account */}
+                <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-b from-slate-900/90 to-slate-950 p-6 flex flex-col justify-between shadow-xl shadow-emerald-500/10 relative">
+                  <div className="absolute -top-3 right-6 px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider">
+                    Recommended
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
+                        Student Account
+                      </span>
+                      <span className="text-xs text-slate-400">Persistent Progress</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-2">Persistent Progress & Memory</h3>
+                    <p className="text-xs text-slate-400 mb-4 leading-relaxed">
+                      Persists your conversation history in PostgreSQL so AlgoMentor retains your learning context across sessions.
+                    </p>
+                    <ul className="space-y-2 text-xs text-slate-300 mb-6">
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Full conversation transcripts stored in Supabase</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Session resumption: AI mentor remembers where you left off</span>
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                        <span>Personalized learning history linked to your username</span>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <button
+                    onClick={handleStartAuth}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-400 hover:to-cyan-400 text-white text-xs font-semibold shadow-lg shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Sign In / Register</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
