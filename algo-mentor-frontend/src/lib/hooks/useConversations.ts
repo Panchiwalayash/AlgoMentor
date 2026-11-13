@@ -13,14 +13,34 @@ export function useConversations() {
     setConversations((prev) => {
       const now = Date.now();
 
-      // Prevent immediate duplicate if exact same message is emitted twice
+      // Prevent duplicate or progressive chunk fragmentation
       const last = prev[prev.length - 1];
-      if (
-        last &&
-        last.speaker === speaker &&
-        last.message.trim().toLowerCase() === trimmed.toLowerCase()
-      ) {
-        return prev;
+      if (last && last.speaker === speaker) {
+        const lastMsg = last.message.trim().toLowerCase();
+        const newMsg = trimmed.toLowerCase();
+
+        // 1. Exact duplicate
+        if (lastMsg === newMsg) {
+          return prev;
+        }
+
+        // 2. The new message is an extension/continuation of the previous message
+        // (common with streaming STT/TTS transcript segments)
+        if (newMsg.startsWith(lastMsg) || newMsg.includes(lastMsg)) {
+          const updated = [...prev];
+          updated[updated.length - 1] = {
+            ...last,
+            message: trimmed,
+            timestamp: new Date().toISOString(),
+          };
+          lastTimestampRef.current = now;
+          return updated;
+        }
+
+        // 3. The new message is shorter/contained in the previous message
+        if (lastMsg.startsWith(newMsg) || lastMsg.includes(newMsg)) {
+          return prev;
+        }
       }
 
       lastSpeakerRef.current = speaker;

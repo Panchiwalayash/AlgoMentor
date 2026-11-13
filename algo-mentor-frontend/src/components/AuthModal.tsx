@@ -13,7 +13,6 @@ export function AuthModal() {
     continueAsGuest,
     signIn,
     signUp,
-    verifyOtp,
     resendVerification,
     pendingVerificationEmail,
   } = useAuth();
@@ -21,7 +20,6 @@ export function AuthModal() {
   const [email, setEmail] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [otpToken, setOtpToken] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -78,29 +76,6 @@ export function AuthModal() {
       setSuccessMsg(`Verification email dispatched to ${email}! Please verify before logging in.`);
     } else {
       setSuccessMsg("Account created and signed in successfully!");
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const targetEmail = pendingVerificationEmail || email;
-    if (!targetEmail) {
-      setErrorMsg("Email address is missing for verification.");
-      return;
-    }
-    if (!otpToken.trim()) {
-      setErrorMsg("Please enter the 6-digit confirmation code from your email.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    const res = await verifyOtp(targetEmail, otpToken);
-    setIsSubmitting(false);
-
-    if (!res.success) {
-      setErrorMsg(res.error || "Invalid verification code.");
-    } else {
-      setSuccessMsg("Email successfully verified! Welcome to AlgoMentor.");
     }
   };
 
@@ -343,45 +318,32 @@ export function AuthModal() {
               </p>
             </div>
 
-            {/* Optional 6-digit OTP code entry */}
-            <form onSubmit={handleVerifyOtp} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">
-                  Have a 6-digit verification code? (Optional)
-                </label>
-                <input
-                  type="text"
-                  value={otpToken}
-                  onChange={(e) => setOtpToken(e.target.value)}
-                  placeholder="e.g. 123456"
-                  maxLength={10}
-                  className="w-full rounded-xl bg-slate-950/70 border border-slate-700/80 px-3.5 py-2 text-sm text-center font-mono tracking-widest text-white placeholder-slate-500 focus:border-emerald-400 focus:outline-none focus:ring-1 focus:ring-emerald-400"
-                />
-              </div>
+            {/* Email verification instructions */}
+            <div className="rounded-xl bg-slate-900/80 border border-slate-800 p-3.5 text-xs text-slate-300 space-y-2">
+              <p className="flex items-center gap-2 text-slate-200 font-medium">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                Waiting for email confirmation
+              </p>
+              <p className="text-slate-400 text-[11px] leading-relaxed">
+                Click the confirmation button in the email to activate your account. Once confirmed, you can log in and start your voice session.
+              </p>
+            </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting || !otpToken.trim()}
-                className="w-full rounded-xl bg-emerald-600 hover:bg-emerald-500 py-2 text-xs font-semibold text-white disabled:opacity-40 transition-colors"
-              >
-                {isSubmitting ? "Verifying…" : "Confirm Code"}
-              </button>
-            </form>
-
-            <div className="flex items-center justify-between pt-1 border-t border-slate-800/80 text-xs">
+            <div className="pt-2 border-t border-slate-800/80 space-y-2.5">
               <button
                 type="button"
                 onClick={handleResend}
                 disabled={isResending}
-                className="flex items-center gap-1.5 text-slate-400 hover:text-emerald-400 transition-colors"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 py-2.5 text-xs font-semibold text-slate-200 border border-slate-700 transition-colors disabled:opacity-50"
               >
                 <RefreshCw className={`w-3.5 h-3.5 ${isResending ? "animate-spin" : ""}`} />
-                Resend verification email
+                {isResending ? "Resending Email…" : "Resend Verification Email"}
               </button>
+
               <button
                 type="button"
                 onClick={() => handleTabChange("signin")}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="w-full text-center text-xs text-slate-400 hover:text-white transition-colors py-1"
               >
                 Back to Sign In
               </button>

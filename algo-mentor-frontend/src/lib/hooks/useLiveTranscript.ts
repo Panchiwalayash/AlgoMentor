@@ -302,7 +302,7 @@ export function useLiveTranscript(
       if (agentSettleTimer.current) clearTimeout(agentSettleTimer.current);
       agentSettleTimer.current = setTimeout(() => {
         commitTurn("AlgoMentor", agentSegments.current, setLiveAgentText);
-      }, 400);
+      }, 1000);
     }
   }, [isAgentSpeaking, commitTurn]);
 
