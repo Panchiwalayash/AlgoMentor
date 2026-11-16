@@ -1,0 +1,842 @@
+[
+  {
+    "id": "heap-01",
+    "topic": "heaps",
+    "question": "What is the time complexity to build a binary heap from an unsorted array of N elements using Floyd's algorithm?",
+    "answer_key": "O(N)",
+    "pitfall_misconception": "O(N log N) from assuming N individual insertions",
+    "source": "heaps.md; CLRS Section 6.3"
+  },
+  {
+    "id": "heap-02",
+    "topic": "heaps",
+    "question": "In a 0-indexed array representation of a binary heap, what is the formula for the left child of node i?",
+    "answer_key": "2 * i + 1",
+    "pitfall_misconception": "2 * i (which applies to 1-indexed representations)",
+    "source": "heaps.md; CLRS Section 6.1"
+  },
+  {
+    "id": "heap-03",
+    "topic": "heaps",
+    "question": "In a 0-indexed array representation of a binary heap, what is the formula for the parent of node i?",
+    "answer_key": "(i - 1) // 2",
+    "pitfall_misconception": "i // 2",
+    "source": "heaps.md; CLRS Section 6.1"
+  },
+  {
+    "id": "heap-04",
+    "topic": "heaps",
+    "question": "Why does Floyd's bottom-up heapify run in O(N) instead of O(N log N)?",
+    "answer_key": "Most nodes are located at the bottom of the tree with small heights; the mathematical summation N * sum(h / 2^h) converges to 2 * N",
+    "pitfall_misconception": "Assuming every node can sift down the full height of the tree log N",
+    "source": "heaps.md; CLRS Section 6.3"
+  },
+  {
+    "id": "heap-05",
+    "topic": "heaps",
+    "question": "What is the time complexity of inserting an element into a binary heap (sift-up)?",
+    "answer_key": "O(log N)",
+    "pitfall_misconception": "O(1) amortized or O(N)",
+    "source": "heaps.md; CLRS Section 6.5"
+  },
+  {
+    "id": "heap-06",
+    "topic": "heaps",
+    "question": "What is the time complexity of extracting the minimum or maximum element from a binary heap (sift-down)?",
+    "answer_key": "O(log N)",
+    "pitfall_misconception": "O(1) because root is known",
+    "source": "heaps.md; CLRS Section 6.5"
+  },
+  {
+    "id": "heap-07",
+    "topic": "heaps",
+    "question": "What is the time complexity to inspect or peek at the minimum element in a min-heap?",
+    "answer_key": "O(1)",
+    "pitfall_misconception": "O(log N)",
+    "source": "heaps.md"
+  },
+  {
+    "id": "heap-08",
+    "topic": "heaps",
+    "question": "What kind of heap is provided by default in Python's standard `heapq` module?",
+    "answer_key": "Min-heap",
+    "pitfall_misconception": "Max-heap",
+    "source": "heaps.md; Python official docs"
+  },
+  {
+    "id": "heap-09",
+    "topic": "heaps",
+    "question": "How do you simulate a max-heap using Python's standard `heapq` module?",
+    "answer_key": "Multiply numerical values by -1 before pushing and when popping",
+    "pitfall_misconception": "Passing max=True or using non-existent max_heapify function",
+    "source": "heaps.md"
+  },
+  {
+    "id": "heap-10",
+    "topic": "heaps",
+    "question": "To find the top K largest elements in a stream of N items with optimal memory, what heap configuration should be used?",
+    "answer_key": "A Min-Heap of size K",
+    "pitfall_misconception": "A Max-Heap of size N or size K (max-heap of size K evicts large items)",
+    "source": "heaps.md; LeetCode 215"
+  },
+  {
+    "id": "heap-11",
+    "topic": "heaps",
+    "question": "What structural property must a binary heap satisfy?",
+    "answer_key": "Complete binary tree (filled on all levels except possibly the lowest, which is filled left to right)",
+    "pitfall_misconception": "Full binary tree or Perfect binary tree",
+    "source": "heaps.md; CLRS Section 6.1"
+  },
+  {
+    "id": "heap-12",
+    "topic": "heaps",
+    "question": "In Floyd's bottom-up heapify on an array of length N, at what index does sift-down start?",
+    "answer_key": "(N // 2) - 1",
+    "pitfall_misconception": "N - 1 (leaves have height 0 and cannot sift down)",
+    "source": "heaps.md; CLRS Section 6.3"
+  },
+  {
+    "id": "heap-13",
+    "topic": "heaps",
+    "question": "What is the time complexity to search for an arbitrary element in an unsorted binary heap?",
+    "answer_key": "O(N) linear time",
+    "pitfall_misconception": "O(log N) from confusing heaps with binary search trees",
+    "source": "heaps.md; CLRS Section 6"
+  },
+  {
+    "id": "heap-14",
+    "topic": "heaps",
+    "question": "In continuous median maintenance, which two heaps are used and what size balance must they maintain?",
+    "answer_key": "A Max-Heap for the smaller half and a Min-Heap for the larger half, where heap sizes differ by at most 1",
+    "pitfall_misconception": "Two min-heaps, or allowing size difference > 1",
+    "source": "heaps.md; LeetCode 295"
+  },
+  {
+    "id": "heap-15",
+    "topic": "heaps",
+    "question": "What is the time complexity of merging K sorted linked lists containing a total of N elements using a min-heap?",
+    "answer_key": "O(N log K)",
+    "pitfall_misconception": "O(N log N) or O(N * K)",
+    "source": "heaps.md; LeetCode 23"
+  },
+  {
+    "id": "bs-01",
+    "topic": "binary-search",
+    "question": "What is the essential precondition for applying standard binary search on an array?",
+    "answer_key": "The elements must be sorted, or exhibit a monotonic boolean predicate property",
+    "pitfall_misconception": "Binary search works on any random unsorted array",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-02",
+    "topic": "binary-search",
+    "question": "What is the time complexity of binary search on a sorted array of N elements?",
+    "answer_key": "O(log N)",
+    "pitfall_misconception": "O(N) or O(1)",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-03",
+    "topic": "binary-search",
+    "question": "Why is `mid = left + (right - left) // 2` preferred over `mid = (left + right) // 2`?",
+    "answer_key": "It prevents integer overflow in fixed-width integer languages (like Java and C++) when left + right exceeds 2^31 - 1",
+    "pitfall_misconception": "It is faster for the CPU or required by Python syntax",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-04",
+    "topic": "binary-search",
+    "question": "If right is initialized to len(nums) - 1, what should the while loop condition be?",
+    "answer_key": "while left <= right",
+    "pitfall_misconception": "while left < right (which misses checking the single element left == right)",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-05",
+    "topic": "binary-search",
+    "question": "What is the auxiliary space complexity of iterative binary search?",
+    "answer_key": "O(1)",
+    "pitfall_misconception": "O(log N) (which only applies to naive recursive implementations)",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-06",
+    "topic": "binary-search",
+    "question": "Why must the pointer update be `left = mid + 1` instead of `left = mid` in `while left <= right`?",
+    "answer_key": "To prevent an infinite loop when left and right are adjacent and nums[mid] is less than target",
+    "pitfall_misconception": "It is arbitrary cosmetic preference",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-07",
+    "topic": "binary-search",
+    "question": "In a rotated sorted array without duplicates, what property is always guaranteed for any midpoint division?",
+    "answer_key": "At least one half of the array (either [left..mid] or [mid..right]) is strictly sorted",
+    "pitfall_misconception": "Neither half is sorted or both halves are sorted",
+    "source": "binary-search.md; LeetCode 33"
+  },
+  {
+    "id": "bs-08",
+    "topic": "binary-search",
+    "question": "How do you find the first occurrence (lower bound) of a duplicate target value in a sorted array?",
+    "answer_key": "When nums[mid] == target, continue narrowing the search to the left half with right = mid - 1",
+    "pitfall_misconception": "Returning mid immediately upon the first match",
+    "source": "binary-search.md; LeetCode 34"
+  },
+  {
+    "id": "bs-09",
+    "topic": "binary-search",
+    "question": "What is the maximum number of comparisons binary search requires to search 1,000,000 items in the worst case?",
+    "answer_key": "At most 20 comparisons (ceil(log2(1,000,000)) = 20)",
+    "pitfall_misconception": "1,000 or 500,000",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-10",
+    "topic": "binary-search",
+    "question": "In Peak Element search (nums[i] > nums[i+1]), why can binary search be used on an unsorted array?",
+    "answer_key": "Because moving in the direction of the strictly larger adjacent neighbor guarantees reaching a local peak",
+    "pitfall_misconception": "Assuming the whole array must be sorted to use binary search",
+    "source": "binary-search.md; LeetCode 162"
+  },
+  {
+    "id": "bs-11",
+    "topic": "binary-search",
+    "question": "What is the call stack space complexity of standard recursive binary search?",
+    "answer_key": "O(log N)",
+    "pitfall_misconception": "O(1) without tail-call optimization",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "bs-12",
+    "topic": "binary-search",
+    "question": "What does Python's `bisect.bisect_left(arr, x)` return if x already exists in arr?",
+    "answer_key": "The index of the first (leftmost) occurrence of x",
+    "pitfall_misconception": "The index after the last occurrence of x (which is bisect_right)",
+    "source": "binary-search.md; Python docs"
+  },
+  {
+    "id": "bs-13",
+    "topic": "binary-search",
+    "question": "In 'Binary Search on Answer' problems (e.g. Koko Eating Bananas), what is being halved at each step?",
+    "answer_key": "The bounded range of possible answer values (e.g. eating speeds between 1 and max(piles)), not input array indices",
+    "pitfall_misconception": "The input piles array itself",
+    "source": "binary-search.md; LeetCode 875"
+  },
+  {
+    "id": "bs-14",
+    "topic": "binary-search",
+    "question": "What is the worst-case time complexity of searching in a rotated sorted array containing duplicate values?",
+    "answer_key": "O(N) linear time",
+    "pitfall_misconception": "O(log N) is still guaranteed (when nums[left] == nums[mid] == nums[right], boundaries cannot be eliminated in O(1))",
+    "source": "binary-search.md; LeetCode 81"
+  },
+  {
+    "id": "bs-15",
+    "topic": "binary-search",
+    "question": "When a binary search loop written as `while left < right` terminates, what is the relation between left and right?",
+    "answer_key": "left == right",
+    "pitfall_misconception": "left > right",
+    "source": "binary-search.md"
+  },
+  {
+    "id": "tp-01",
+    "topic": "two-pointers",
+    "question": "What is the primary asymptotic optimization achieved by two pointers over nested brute-force loops?",
+    "answer_key": "Reduces O(N^2) brute force to O(N) linear time",
+    "pitfall_misconception": "Reduces space complexity to O(log N)",
+    "source": "two-pointers.md"
+  },
+  {
+    "id": "tp-02",
+    "topic": "two-pointers",
+    "question": "What is the initialization pattern for opposite-direction two pointers in an array of size N?",
+    "answer_key": "left = 0 and right = N - 1, moving inward toward each other",
+    "pitfall_misconception": "left = 0 and right = 1",
+    "source": "two-pointers.md"
+  },
+  {
+    "id": "tp-03",
+    "topic": "two-pointers",
+    "question": "Can opposite-direction two pointers be used to find two numbers summing to target on an unsorted array without sorting?",
+    "answer_key": "No, because the decision to increment left or decrement right requires the monotonic sum property of a sorted sequence",
+    "pitfall_misconception": "Yes, two pointers works on any array configuration",
+    "source": "two-pointers.md; LeetCode 167"
+  },
+  {
+    "id": "tp-04",
+    "topic": "two-pointers",
+    "question": "In fast/slow pointer array deduplication in-place, what is the role of each pointer?",
+    "answer_key": "Fast scans each element; Slow marks the boundary where unique elements are written",
+    "pitfall_misconception": "Both pointers move at fixed double speed",
+    "source": "two-pointers.md; LeetCode 26"
+  },
+  {
+    "id": "tp-05",
+    "topic": "two-pointers",
+    "question": "In 3Sum, how do you prevent duplicate triplets from appearing in the output?",
+    "answer_key": "Skip identical adjacent values for the outer loop and inner pointers (e.g. while left < right and nums[left] == nums[left + 1]: left += 1)",
+    "pitfall_misconception": "Converting the entire output to a hash set at the end",
+    "source": "two-pointers.md; LeetCode 15"
+  },
+  {
+    "id": "tp-06",
+    "topic": "two-pointers",
+    "question": "In 'Container With Most Water', which pointer is moved inward at each iteration and why?",
+    "answer_key": "The pointer pointing to the shorter vertical line, because area is limited by min(height[l], height[r]) and moving the taller line can never increase area",
+    "pitfall_misconception": "Moving both pointers simultaneously or moving the taller line",
+    "source": "two-pointers.md; LeetCode 11"
+  },
+  {
+    "id": "tp-07",
+    "topic": "two-pointers",
+    "question": "What is the time and space complexity of validating a palindrome using two pointers?",
+    "answer_key": "O(N) time and O(1) auxiliary space",
+    "pitfall_misconception": "O(N) space from reversing the string into a new copy",
+    "source": "two-pointers.md; LeetCode 125"
+  },
+  {
+    "id": "tp-08",
+    "topic": "two-pointers",
+    "question": "In Trapping Rain Water, how do two pointers eliminate the O(N) space required by prefix/suffix max arrays?",
+    "answer_key": "By maintaining left_max and right_max variables and processing whichever side has the smaller maximum bound",
+    "pitfall_misconception": "Two pointers cannot solve Trapping Rain Water in O(1) space",
+    "source": "two-pointers.md; LeetCode 42"
+  },
+  {
+    "id": "tp-09",
+    "topic": "two-pointers",
+    "question": "What is the termination condition for opposite-direction two pointers searching a pair?",
+    "answer_key": "left >= right (the while loop runs while left < right)",
+    "pitfall_misconception": "left > right + 1 or left == 0",
+    "source": "two-pointers.md"
+  },
+  {
+    "id": "tp-10",
+    "topic": "two-pointers",
+    "question": "In the Dutch National Flag algorithm (3-way partition of 0s, 1s, and 2s), how many pointers are maintained?",
+    "answer_key": "Three pointers: low, mid, and high",
+    "pitfall_misconception": "Two pointers only",
+    "source": "two-pointers.md; LeetCode 75"
+  },
+  {
+    "id": "tp-11",
+    "topic": "two-pointers",
+    "question": "What is the time complexity of the Dutch National Flag 3-way partition algorithm?",
+    "answer_key": "O(N) in a single pass",
+    "pitfall_misconception": "O(N log N) from sorting",
+    "source": "two-pointers.md; LeetCode 75"
+  },
+  {
+    "id": "tp-12",
+    "topic": "two-pointers",
+    "question": "In a sliding window implemented with two pointers, what defines the current window?",
+    "answer_key": "The contiguous subarray between boundary indices left and right",
+    "pitfall_misconception": "Any non-contiguous subset of elements",
+    "source": "two-pointers.md"
+  },
+  {
+    "id": "tp-13",
+    "topic": "two-pointers",
+    "question": "When finding the minimum size subarray sum >= target, when does the left window boundary contract?",
+    "answer_key": "Whenever the current window sum is >= target, contracting left to find the minimal valid window",
+    "pitfall_misconception": "Only when the window sum is strictly less than target",
+    "source": "two-pointers.md; LeetCode 209"
+  },
+  {
+    "id": "tp-14",
+    "topic": "two-pointers",
+    "question": "What is the typical auxiliary space complexity of two-pointer array algorithms?",
+    "answer_key": "O(1) in-place memory",
+    "pitfall_misconception": "O(N) space",
+    "source": "two-pointers.md"
+  },
+  {
+    "id": "tp-15",
+    "topic": "two-pointers",
+    "question": "Why does sorting an unsorted array first for 3Sum still achieve an optimal O(N^2) overall time complexity?",
+    "answer_key": "Sorting takes O(N log N), which is dominated by the O(N^2) two-pointer pair searches",
+    "pitfall_misconception": "Sorting makes 3Sum O(N^3)",
+    "source": "two-pointers.md; LeetCode 15"
+  },
+  {
+    "id": "ll-01",
+    "topic": "linked-lists",
+    "question": "What is the primary benefit of using a Dummy Head node in linked list algorithms?",
+    "answer_key": "It eliminates edge cases for empty lists and operations that insert, remove, or modify the actual head node",
+    "pitfall_misconception": "It speeds up pointer dereferencing from O(N) to O(1)",
+    "source": "linked-lists.md"
+  },
+  {
+    "id": "ll-02",
+    "topic": "linked-lists",
+    "question": "In Floyd's Cycle Detection algorithm, at what relative speeds do the slow and fast pointers advance?",
+    "answer_key": "Slow advances 1 node per iteration; Fast advances 2 nodes per iteration",
+    "pitfall_misconception": "Slow advances 2 nodes and Fast advances 4 nodes",
+    "source": "linked-lists.md; LeetCode 141"
+  },
+  {
+    "id": "ll-03",
+    "topic": "linked-lists",
+    "question": "What is the auxiliary space complexity of iteratively reversing a singly linked list?",
+    "answer_key": "O(1)",
+    "pitfall_misconception": "O(N) auxiliary space",
+    "source": "linked-lists.md; LeetCode 206"
+  },
+  {
+    "id": "ll-04",
+    "topic": "linked-lists",
+    "question": "Why must `nxt = curr.next` be saved before executing `curr.next = prev` in iterative linked list reversal?",
+    "answer_key": "Because reassigning curr.next to prev overwrites the pointer, severing and permanently losing reference to the remainder of the list",
+    "pitfall_misconception": "It is optional syntactic convention",
+    "source": "linked-lists.md"
+  },
+  {
+    "id": "ll-05",
+    "topic": "linked-lists",
+    "question": "When the fast pointer reaches the end of a singly linked list in 1-step/2-step traversal, where is the slow pointer?",
+    "answer_key": "At the middle node of the linked list",
+    "pitfall_misconception": "At the one-third mark or at the head node",
+    "source": "linked-lists.md; LeetCode 876"
+  },
+  {
+    "id": "ll-06",
+    "topic": "linked-lists",
+    "question": "In Floyd's Cycle Detection, after slow and fast meet inside a cycle, how do you locate the cycle's entry node?",
+    "answer_key": "Reset one pointer to the head node, keep the other at the meeting node, and advance both at speed 1; they will meet exactly at the cycle entrance",
+    "pitfall_misconception": "The meeting point is always the cycle entry node",
+    "source": "linked-lists.md; LeetCode 142"
+  },
+  {
+    "id": "ll-07",
+    "topic": "linked-lists",
+    "question": "What is the time complexity to access the K-th element in a singly linked list of size N?",
+    "answer_key": "O(K) or O(N) sequential traversal",
+    "pitfall_misconception": "O(1) random access (which only arrays provide)",
+    "source": "linked-lists.md"
+  },
+  {
+    "id": "ll-08",
+    "topic": "linked-lists",
+    "question": "Given only a pointer to a node (not head and not tail), what is the time complexity to delete it?",
+    "answer_key": "O(1) by copying node.next.val into node.val and bypassing node.next",
+    "pitfall_misconception": "O(N) because you must traverse from head",
+    "source": "linked-lists.md; LeetCode 237"
+  },
+  {
+    "id": "ll-09",
+    "topic": "linked-lists",
+    "question": "What is the time complexity of merging two sorted linked lists of lengths M and N?",
+    "answer_key": "O(M + N) time with O(1) auxiliary space",
+    "pitfall_misconception": "O((M + N) log(M + N))",
+    "source": "linked-lists.md; LeetCode 21"
+  },
+  {
+    "id": "ll-10",
+    "topic": "linked-lists",
+    "question": "What condition must be checked before accessing `fast.next.next` to avoid a NullPointerException or AttributeError?",
+    "answer_key": "Both `fast` and `fast.next` must be verified as non-null (`while fast and fast.next:`)",
+    "pitfall_misconception": "Checking only `fast is not None`",
+    "source": "linked-lists.md"
+  },
+  {
+    "id": "ll-11",
+    "topic": "linked-lists",
+    "question": "In an LRU Cache, why is a doubly linked list used in conjunction with a hash map?",
+    "answer_key": "It allows O(1) removal of any arbitrary node and O(1) insertion at the head or tail",
+    "pitfall_misconception": "A singly linked list allows O(1) arbitrary node removal",
+    "source": "linked-lists.md; LeetCode 146"
+  },
+  {
+    "id": "ll-12",
+    "topic": "linked-lists",
+    "question": "How can you verify if a singly linked list is a palindrome in O(1) auxiliary space?",
+    "answer_key": "Find the middle with slow/fast pointers, reverse the second half in-place, and compare node values from head and middle",
+    "pitfall_misconception": "Copying all values to an array (which takes O(N) space)",
+    "source": "linked-lists.md; LeetCode 234"
+  },
+  {
+    "id": "ll-13",
+    "topic": "linked-lists",
+    "question": "What is the time complexity to find the intersection node of two singly linked lists of lengths A and B using the two-pointer switch technique?",
+    "answer_key": "O(A + B) time with O(1) space",
+    "pitfall_misconception": "O(A * B)",
+    "source": "linked-lists.md; LeetCode 160"
+  },
+  {
+    "id": "ll-14",
+    "topic": "linked-lists",
+    "question": "To remove the N-th node from the end of a linked list in one pass, how far ahead should the first pointer advance before the second pointer begins?",
+    "answer_key": "N steps ahead (or N + 1 steps with a dummy head)",
+    "pitfall_misconception": "N // 2 steps",
+    "source": "linked-lists.md; LeetCode 19"
+  },
+  {
+    "id": "ll-15",
+    "topic": "linked-lists",
+    "question": "What is the time complexity of sorting a singly linked list using merge sort?",
+    "answer_key": "O(N log N)",
+    "pitfall_misconception": "O(N^2)",
+    "source": "linked-lists.md; LeetCode 148"
+  },
+  {
+    "id": "tree-01",
+    "topic": "trees",
+    "question": "What is the strict mathematical invariant of a Binary Search Tree (BST)?",
+    "answer_key": "For every node, all values in its entire left subtree must be strictly less than its key, and all values in its entire right subtree must be strictly greater",
+    "pitfall_misconception": "Checking only immediate children (e.g. node.left.val < node.val < node.right.val)",
+    "source": "trees.md; CLRS Section 12.1"
+  },
+  {
+    "id": "tree-02",
+    "topic": "trees",
+    "question": "Which binary tree traversal order visits the keys of a valid BST in strictly sorted ascending order?",
+    "answer_key": "In-Order traversal (Left, Root, Right)",
+    "pitfall_misconception": "Pre-Order or Post-Order traversal",
+    "source": "trees.md; CLRS Section 12.1"
+  },
+  {
+    "id": "tree-03",
+    "topic": "trees",
+    "question": "What data structure is standard for implementing Breadth-First Search (Level-Order) on a binary tree?",
+    "answer_key": "A double-ended queue (FIFO Queue, e.g. collections.deque)",
+    "pitfall_misconception": "A Stack (LIFO)",
+    "source": "trees.md; LeetCode 102"
+  },
+  {
+    "id": "tree-04",
+    "topic": "trees",
+    "question": "In a balanced binary tree of N nodes, what is the maximum tree height?",
+    "answer_key": "O(log N)",
+    "pitfall_misconception": "O(N)",
+    "source": "trees.md"
+  },
+  {
+    "id": "tree-05",
+    "topic": "trees",
+    "question": "In a completely degenerate (skewed) binary search tree, what is the worst-case search time complexity?",
+    "answer_key": "O(N) linear time",
+    "pitfall_misconception": "O(log N) is always guaranteed in BSTs",
+    "source": "trees.md; CLRS Section 12.2"
+  },
+  {
+    "id": "tree-06",
+    "topic": "trees",
+    "question": "How do you correctly validate a BST using DFS recursion?",
+    "answer_key": "Pass valid min_val and max_val bounds down each recursive call (left child inherits max=parent, right inherits min=parent)",
+    "pitfall_misconception": "Only comparing root.val with root.left.val and root.right.val",
+    "source": "trees.md; LeetCode 98"
+  },
+  {
+    "id": "tree-07",
+    "topic": "trees",
+    "question": "What is the time complexity of finding the Lowest Common Ancestor (LCA) in a BST of height H?",
+    "answer_key": "O(H) or O(log N) for balanced BST",
+    "pitfall_misconception": "O(N log N)",
+    "source": "trees.md; LeetCode 235"
+  },
+  {
+    "id": "tree-08",
+    "topic": "trees",
+    "question": "By standard mathematical definition, what is the height of a leaf node with no children?",
+    "answer_key": "Height 0 (number of edges to deepest descendant)",
+    "pitfall_misconception": "Height -1",
+    "source": "trees.md; CLRS Appendix B.5"
+  },
+  {
+    "id": "tree-09",
+    "topic": "trees",
+    "question": "Which tree traversal order is required for bottom-up computations such as calculating tree diameter or maximum depth?",
+    "answer_key": "Post-Order traversal (Left, Right, Root)",
+    "pitfall_misconception": "Pre-Order traversal",
+    "source": "trees.md; LeetCode 104"
+  },
+  {
+    "id": "tree-10",
+    "topic": "trees",
+    "question": "In BFS Level-Order traversal, why must `level_size = len(queue)` be stored before the inner loop?",
+    "answer_key": "To iterate through only the nodes belonging to the current horizontal level without prematurely processing newly appended children",
+    "pitfall_misconception": "It is arbitrary cosmetic code styling",
+    "source": "trees.md; LeetCode 102"
+  },
+  {
+    "id": "tree-11",
+    "topic": "trees",
+    "question": "What is the maximum number of nodes in a binary tree of height h (where a single root node has height 0)?",
+    "answer_key": "2^(h + 1) - 1",
+    "pitfall_misconception": "2^h",
+    "source": "trees.md; CLRS Section 6.1"
+  },
+  {
+    "id": "tree-12",
+    "topic": "trees",
+    "question": "What worst-case search complexity is guaranteed by self-balancing binary search trees (e.g. AVL, Red-Black trees)?",
+    "answer_key": "O(log N)",
+    "pitfall_misconception": "O(1)",
+    "source": "trees.md; CLRS Chapter 13"
+  },
+  {
+    "id": "tree-13",
+    "topic": "trees",
+    "question": "Does the longest path representing the diameter of a binary tree always pass through the root node?",
+    "answer_key": "No, the longest path can reside entirely within a single deep subtree without touching the root",
+    "pitfall_misconception": "Yes, diameter must always pass through the tree root",
+    "source": "trees.md; LeetCode 543"
+  },
+  {
+    "id": "tree-14",
+    "topic": "trees",
+    "question": "Which traversal order with explicit null markers is standard for uniquely serializing and deserializing a binary tree?",
+    "answer_key": "Pre-Order traversal (Root, Left, Right) with null markers",
+    "pitfall_misconception": "In-Order traversal (In-Order alone cannot distinguish root position)",
+    "source": "trees.md; LeetCode 297"
+  },
+  {
+    "id": "tree-15",
+    "topic": "trees",
+    "question": "What is the worst-case space complexity of recursive DFS traversal on an unbalanced binary tree?",
+    "answer_key": "O(N) call stack space when the tree is degenerate",
+    "pitfall_misconception": "O(1)",
+    "source": "trees.md"
+  },
+  {
+    "id": "graph-01",
+    "topic": "graphs",
+    "question": "What algorithm finds the shortest path between two nodes in an unweighted graph?",
+    "answer_key": "Breadth-First Search (BFS) using a Queue",
+    "pitfall_misconception": "Depth-First Search (DFS)",
+    "source": "graphs.md; CLRS Section 22.2"
+  },
+  {
+    "id": "graph-02",
+    "topic": "graphs",
+    "question": "Why must a visited set be maintained when traversing general graphs, unlike binary trees?",
+    "answer_key": "General graphs can contain cycles, which would cause infinite loops and stack overflow without tracking visited vertices",
+    "pitfall_misconception": "Visited sets are optional optimizations",
+    "source": "graphs.md"
+  },
+  {
+    "id": "graph-03",
+    "topic": "graphs",
+    "question": "In BFS on a graph, when should a neighbor node be added to the visited set?",
+    "answer_key": "Immediately upon enqueueing (pushing to the queue), to prevent duplicate enqueueing of the same node",
+    "pitfall_misconception": "When popping from the queue (which causes exponential queue blowup in dense graphs)",
+    "source": "graphs.md"
+  },
+  {
+    "id": "graph-04",
+    "topic": "graphs",
+    "question": "What algorithm computes topological ordering of a Directed Acyclic Graph (DAG) using in-degrees and BFS?",
+    "answer_key": "Kahn's Algorithm (in-degree BFS)",
+    "pitfall_misconception": "Dijkstra's Algorithm",
+    "source": "graphs.md; CLRS Section 22.4"
+  },
+  {
+    "id": "graph-05",
+    "topic": "graphs",
+    "question": "What is the time complexity of BFS or DFS on a graph with V vertices and E edges represented as an adjacency list?",
+    "answer_key": "O(V + E)",
+    "pitfall_misconception": "O(V * E) or O(V^2)",
+    "source": "graphs.md; CLRS Section 22.2"
+  },
+  {
+    "id": "graph-06",
+    "topic": "graphs",
+    "question": "In an undirected graph, how does DFS detect the presence of a cycle?",
+    "answer_key": "If DFS encounters a neighbor that is already visited and is not the immediate parent of the current node",
+    "pitfall_misconception": "Any visited neighbor proves a cycle (it could just be the edge back to the parent)",
+    "source": "graphs.md; CLRS Section 22.3"
+  },
+  {
+    "id": "graph-07",
+    "topic": "graphs",
+    "question": "In a directed graph, how does DFS distinguish a back-edge (cycle) from cross/forward edges?",
+    "answer_key": "By tracking nodes currently in the recursion stack (3-color state: unvisited, visiting/in-stack, visited/done)",
+    "pitfall_misconception": "Using a single boolean visited array",
+    "source": "graphs.md; CLRS Section 22.3"
+  },
+  {
+    "id": "graph-08",
+    "topic": "graphs",
+    "question": "What is the maximum number of edges in a simple undirected graph with V vertices?",
+    "answer_key": "V * (V - 1) / 2",
+    "pitfall_misconception": "V^2",
+    "source": "graphs.md; CLRS Section B.4"
+  },
+  {
+    "id": "graph-09",
+    "topic": "graphs",
+    "question": "What happens when Kahn's topological sort is executed on a directed graph that contains a cycle?",
+    "answer_key": "The algorithm terminates with fewer than V processed nodes (processed_count < V), detecting the cycle",
+    "pitfall_misconception": "It enters an infinite loop or crashes",
+    "source": "graphs.md; LeetCode 207"
+  },
+  {
+    "id": "graph-10",
+    "topic": "graphs",
+    "question": "What algorithm finds single-source shortest paths in graphs with non-negative edge weights?",
+    "answer_key": "Dijkstra's Algorithm using a Min-Heap",
+    "pitfall_misconception": "Breadth-First Search (BFS cannot handle weighted edges correctly)",
+    "source": "graphs.md; CLRS Section 24.3"
+  },
+  {
+    "id": "graph-11",
+    "topic": "graphs",
+    "question": "What is the time complexity of Dijkstra's algorithm implemented with a binary min-heap?",
+    "answer_key": "O((V + E) log V)",
+    "pitfall_misconception": "O(V^2) (which only applies to unoptimized array implementations)",
+    "source": "graphs.md; CLRS Section 24.3"
+  },
+  {
+    "id": "graph-12",
+    "topic": "graphs",
+    "question": "In the 'Number of Islands' grid problem, what does each island represent in graph theory terms?",
+    "answer_key": "A connected component of land cells connected 4-directionally",
+    "pitfall_misconception": "A minimum spanning tree",
+    "source": "graphs.md; LeetCode 200"
+  },
+  {
+    "id": "graph-13",
+    "topic": "graphs",
+    "question": "What data structure supports near O(1) union and find operations to track connected components dynamically?",
+    "answer_key": "Disjoint Set Union (DSU / Union-Find) with path compression and union by rank",
+    "pitfall_misconception": "Adjacency Matrix",
+    "source": "graphs.md; CLRS Chapter 21"
+  },
+  {
+    "id": "graph-14",
+    "topic": "graphs",
+    "question": "What graph property is verified when determining if an undirected graph is Bipartite?",
+    "answer_key": "The graph contains no odd-length cycles and vertices can be 2-colored such that no adjacent vertices share a color",
+    "pitfall_misconception": "The graph has no cycles at all",
+    "source": "graphs.md; LeetCode 785"
+  },
+  {
+    "id": "graph-15",
+    "topic": "graphs",
+    "question": "What is the space complexity of an Adjacency Matrix vs an Adjacency List for a sparse graph with V vertices and E edges?",
+    "answer_key": "Adjacency Matrix is O(V^2); Adjacency List is O(V + E)",
+    "pitfall_misconception": "Adjacency Matrix is O(V + E)",
+    "source": "graphs.md; CLRS Section 22.1"
+  },
+  {
+    "id": "dp-01",
+    "topic": "dynamic-programming",
+    "question": "What two fundamental properties must an optimization problem possess to be solvable via Dynamic Programming?",
+    "answer_key": "Optimal Substructure and Overlapping Subproblems",
+    "pitfall_misconception": "Greedy choice property and sorting",
+    "source": "dynamic-programming.md; CLRS Chapter 15"
+  },
+  {
+    "id": "dp-02",
+    "topic": "dynamic-programming",
+    "question": "What is the structural difference between Memoization and Tabulation?",
+    "answer_key": "Memoization is Top-Down (recursive function with a cache); Tabulation is Bottom-Up (iteratively filling a table)",
+    "pitfall_misconception": "Memoization is iterative and Tabulation is recursive",
+    "source": "dynamic-programming.md; CLRS Chapter 15"
+  },
+  {
+    "id": "dp-03",
+    "topic": "dynamic-programming",
+    "question": "In the Coin Change problem (minimum coins to form amount A), what is the state definition for `dp[i]`?",
+    "answer_key": "The minimum number of coins needed to make amount i",
+    "pitfall_misconception": "The number of unique coin combinations to form amount i",
+    "source": "dynamic-programming.md; LeetCode 322"
+  },
+  {
+    "id": "dp-04",
+    "topic": "dynamic-programming",
+    "question": "In 0/1 Knapsack with 1D space optimization, why must the inner weight loop iterate backwards from capacity down to item_weight?",
+    "answer_key": "To prevent using the same item multiple times in the same transaction (ensures dp[w - weight] reflects state from the previous item)",
+    "pitfall_misconception": "It is an arbitrary loop direction choice",
+    "source": "dynamic-programming.md; CLRS Section 16.2"
+  },
+  {
+    "id": "dp-05",
+    "topic": "dynamic-programming",
+    "question": "In Unbounded Knapsack (or Coin Change), why does the inner weight loop iterate forwards?",
+    "answer_key": "Because each item or coin can be chosen an unlimited number of times",
+    "pitfall_misconception": "Because backwards iteration causes index errors",
+    "source": "dynamic-programming.md; LeetCode 322"
+  },
+  {
+    "id": "dp-06",
+    "topic": "dynamic-programming",
+    "question": "What is the time complexity of computing the N-th Fibonacci number using DP memoization?",
+    "answer_key": "O(N) linear time, avoiding the O(2^N) exponential recursion",
+    "pitfall_misconception": "O(N^2) or O(2^N)",
+    "source": "dynamic-programming.md; CLRS Chapter 15"
+  },
+  {
+    "id": "dp-07",
+    "topic": "dynamic-programming",
+    "question": "How can the space complexity of Climbing Stairs or Fibonacci DP be optimized from O(N) to O(1)?",
+    "answer_key": "By maintaining only two scalar variables holding the preceding two subproblem values (prev1, prev2)",
+    "pitfall_misconception": "Space cannot be optimized below O(N)",
+    "source": "dynamic-programming.md; LeetCode 70"
+  },
+  {
+    "id": "dp-08",
+    "topic": "dynamic-programming",
+    "question": "In Longest Common Subsequence (LCS) of two strings s1 and s2, what is the state transition when `s1[i - 1] == s2[j - 1]`?",
+    "answer_key": "dp[i][j] = dp[i - 1][j - 1] + 1",
+    "pitfall_misconception": "dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])",
+    "source": "dynamic-programming.md; CLRS Section 15.4"
+  },
+  {
+    "id": "dp-09",
+    "topic": "dynamic-programming",
+    "question": "In Longest Common Subsequence (LCS), what is the state transition when `s1[i - 1] != s2[j - 1]`?",
+    "answer_key": "dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])",
+    "pitfall_misconception": "dp[i][j] = 0",
+    "source": "dynamic-programming.md; CLRS Section 15.4"
+  },
+  {
+    "id": "dp-10",
+    "topic": "dynamic-programming",
+    "question": "What is the optimal time complexity to solve Longest Increasing Subsequence (LIS) using patient sorting with binary search?",
+    "answer_key": "O(N log N)",
+    "pitfall_misconception": "O(N^2) (which is the naive double-loop DP)",
+    "source": "dynamic-programming.md; LeetCode 300"
+  },
+  {
+    "id": "dp-11",
+    "topic": "dynamic-programming",
+    "question": "In House Robber, what is the recurrence relation for dp[i] (max money robbing up to house i)?",
+    "answer_key": "dp[i] = max(dp[i - 1], dp[i - 2] + nums[i])",
+    "pitfall_misconception": "dp[i] = dp[i - 1] + nums[i]",
+    "source": "dynamic-programming.md; LeetCode 198"
+  },
+  {
+    "id": "dp-12",
+    "topic": "dynamic-programming",
+    "question": "In Unique Paths in an M x N grid (moving only right and down), what is the recurrence relation for dp[i][j]?",
+    "answer_key": "dp[i][j] = dp[i - 1][j] + dp[i][j - 1]",
+    "pitfall_misconception": "dp[i][j] = min(dp[i - 1][j], dp[i][j - 1]) + 1",
+    "source": "dynamic-programming.md; LeetCode 62"
+  },
+  {
+    "id": "dp-13",
+    "topic": "dynamic-programming",
+    "question": "In Coin Change, what is the mathematical base case for amount 0?",
+    "answer_key": "dp[0] = 0 (it takes 0 coins to make an amount of 0)",
+    "pitfall_misconception": "dp[0] = infinity",
+    "source": "dynamic-programming.md; LeetCode 322"
+  },
+  {
+    "id": "dp-14",
+    "topic": "dynamic-programming",
+    "question": "In Edit Distance (Levenshtein Distance), what three subproblem operations are compared when characters mismatch?",
+    "answer_key": "Insertion (dp[i][j-1] + 1), Deletion (dp[i-1][j] + 1), and Replacement (dp[i-1][j-1] + 1)",
+    "pitfall_misconception": "Only insertion and deletion",
+    "source": "dynamic-programming.md; LeetCode 72"
+  },
+  {
+    "id": "dp-15",
+    "topic": "dynamic-programming",
+    "question": "How do you distinguish whether a problem is solvable by a Greedy algorithm versus Dynamic Programming?",
+    "answer_key": "Greedy algorithms make locally optimal choices without backtracking; DP is required when local optimal choices do not guarantee global optimality due to overlapping subproblem dependencies",
+    "pitfall_misconception": "Greedy is just faster DP with no difference in problem constraints",
+    "source": "dynamic-programming.md; CLRS Chapter 16"
+  }
+]

@@ -1,25 +1,16 @@
----
-title: AlgoMentor
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 <div align="center">
 
 # AlgoMentor
 
-**Voice-first Data Structures & Algorithms (DSA) tutoring platform for developers and college students.**
+**A real-time voice tutor that teaches Data Structures & Algorithms through Socratic scaffolding — hints, not answers.**
 
-Talk through LeetCode and technical interview problems out loud with an AI mentor grounded in curated curriculum material using low-latency WebRTC streaming, Socratic guidance, and vector-backed RAG.
+A Next.js app on Vercel mints LiveKit tokens and joins a WebRTC room with a Python LiveKit agent that listens, thinks, and speaks back in real time. The tutor is grounded in curated notes for seven DSA topics, chunked by section and embedded with MiniLM in ChromaDB.
 
-[![Next.js](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 [![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LiveKit](https://img.shields.io/badge/LiveKit-WebRTC-002B36?logo=webrtc&logoColor=white)](https://livekit.io/)
 [![Groq](https://img.shields.io/badge/Groq-LPU%20Inference-F55036)](https://groq.com/)
-[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Storage-orange)](https://www.trychroma.com/)
+[![ChromaDB](https://img.shields.io/badge/ChromaDB-Vector%20Store-orange)](https://www.trychroma.com/)
 [![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -29,93 +20,172 @@ Talk through LeetCode and technical interview problems out loud with an AI mento
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [System Architecture](#system-architecture)
+- [How It Works](#how-it-works)
+- [Architecture](#architecture)
+- [Voice Pipeline](#voice-pipeline)
+- [RAG Grounding](#rag-grounding)
+- [Session Persistence](#session-persistence)
+- [Evaluation](#evaluation)
 - [Repository Structure](#repository-structure)
-- [Curated DSA Modules (RAG Grounding)](#curated-dsa-modules-rag-grounding)
-- [Environment Variables](#environment-variables)
-  - [Frontend (`algo-mentor-frontend/.env.local`)](#frontend-algo-mentor-frontendenvlocal)
-  - [Backend Agent (`algo-mentor-backend/.env`)](#backend-agent-algo-mentor-backendenv)
-- [Local Development Setup](#local-development-setup)
-  - [1. Database Setup (Supabase)](#1-database-setup-supabase)
-  - [2. Backend Setup (Python & LiveKit Worker)](#2-backend-setup-python--livekit-worker)
-  - [3. Frontend Setup (Next.js 14)](#3-frontend-setup-nextjs-14)
-- [Docker & Containerized Deployment](#docker--containerized-deployment)
-  - [Running Backend with Docker Compose](#running-backend-with-docker-compose)
-  - [Deploying Backend to Oracle Cloud (OCI)](#deploying-backend-to-oracle-cloud-oci)
-  - [Deploying Backend via Render](#deploying-backend-via-render)
-  - [Production Frontend Deployment (Vercel)](#production-frontend-deployment-vercel)
-- [Health Monitoring & Keep-Alive](#health-monitoring--keep-alive)
-- [Adding New DSA Topics](#adding-new-dsa-topics)
+- [Setup](#setup)
+  - [Prerequisites](#prerequisites)
+  - [Database (Supabase)](#database-supabase)
+  - [Backend (Python Agent)](#backend-python-agent)
+  - [Frontend (Next.js)](#frontend-nextjs)
+- [Deployment](#deployment)
+  - [Backend — Docker on Oracle Cloud](#backend--docker-on-oracle-cloud)
+  - [Frontend — Vercel](#frontend--vercel)
+- [Adding New Topics](#adding-new-topics)
 - [License](#license)
 
 ---
 
-## Overview
+## How It Works
 
-Preparing for technical interviews by typing out code in silence doesn't prepare candidates for real interview conditions, where engineers are expected to talk through their thought process, explore edge cases, and justify algorithmic complexity out loud.
+Preparing for technical interviews by typing code in silence doesn't match the real experience, where engineers talk through their thought process, explore edge cases, and justify complexity out loud.
 
-**AlgoMentor** bridges this gap:
-- **Interactive Pair Programming**: You speak into your microphone, and AlgoMentor responds verbally in sub-second latency.
-- **Socratic Guidance**: Rather than immediately leaking solutions or generating code dumps, AlgoMentor guides you with intuition questions, small numerical examples, and targeted hints.
-- **Strictly Grounded (RAG)**: Topic-specific lessons are pulled directly from curated markdown guides via ChromaDB vector retrieval, ensuring the mentor teaches established templates, edge-case pitfalls (like integer overflow in binary search, or Floyd's linear $O(n)$ heap construction), and optimal bounds.
-- **Session Persistence & Memory**: Chat transcripts and spoken messages are synchronized and saved to Supabase for authenticated students, enabling seamless session resumption with retained context.
+AlgoMentor closes that gap. You speak into your microphone, and the tutor responds verbally with Socratic questions — intuition prompts, small numerical examples, and targeted hints — rather than dumping solutions or code. Session transcripts are stored in Supabase (PostgreSQL) for authenticated students so they can resume where they left off.
 
 ---
 
-## Key Features
-
-- **Real-Time Bi-Directional Audio**: Built on LiveKit WebRTC with Silero Voice Activity Detection (VAD) and Groq Whisper STT (`whisper-large-v3-turbo`).
-- **Ultra-Fast Voice Generation**: Supports LiveKit Cloud inference, Groq TTS, and Cartesia Sonic for ultra-realistic spoken conversation with minimal latency.
-- **Semantic Vector Search (RAG)**: Markdown-based course repository indexed with `sentence-transformers/all-MiniLM-L6-v2` and ChromaDB.
-- **Live Captions & Chat Log**: Real-time speech transcription UI with interactive audio visualizer and mute/disconnect toggles.
-- **Guest vs. Authenticated Learning Modes**:
-  - **Guest Mode**: Instant 1-click mock practice without login (ephemeral sessions).
-  - **Student Account**: Persistent conversation history linked to email and username, enabling session resumption.
-- **Persistent Session Memory**: Session transcripts and summaries are persisted to Supabase upon completing a session (`POST /api/store-conversation`).
-- **Built-in Keep-Alive Server**: Integrated `aiohttp` web server running alongside the agent worker on port `7860` for cloud pinging and zero-downtime hosting.
-
----
-
-## System Architecture
+## Architecture
 
 ```mermaid
 flowchart TD
-    User([User / Browser]) <-->|WebRTC Voice Stream| LK[LiveKit Cloud Audio Room]
-    User <-->|Next.js 14 App Router| FE[algo-mentor-frontend]
+    User([Browser]) <-->|WebRTC Audio| LK[LiveKit Cloud]
+    User <-->|Next.js 14 App Router| FE[algo-mentor-frontend on Vercel]
 
-    subgraph LiveKit Worker Agent [algo-mentor-backend]
+    subgraph Agent ["algo-mentor-backend (Docker)"]
         Worker[LiveKit Agent Worker]
         VAD[Silero VAD]
         STT[Groq Whisper STT]
-        LLM[Groq LLaMA / OSS LLM]
-        TTS[LiveKit / Cartesia / Groq TTS]
-        RAG[ChromaDB + Sentence-Transformers]
-        KeepAlive[aiohttp HTTP Server :7860]
+        LLM[Groq LLM]
+        TTS[Cartesia / LiveKit TTS]
+        RAG[ChromaDB + MiniLM]
     end
 
-    LK <-->|Audio / Metadata Sync| Worker
+    LK <-->|Audio + Metadata| Worker
     Worker --> VAD
     Worker --> STT
     Worker --> RAG
     Worker --> LLM
     Worker --> TTS
 
-    FE -->|Mint LiveKit JWT /api/course| LK
-    FE -->|Store Session History /api/store-conversation| DB[(Supabase PostgreSQL)]
+    FE -->|Mint LiveKit JWT| LK
+    FE -->|Store transcript| DB[(Supabase PostgreSQL)]
 ```
 
-### Component Breakdown
-
-| Layer | Technology | Role |
+| Layer | Stack | What it does |
 |---|---|---|
-| **Frontend** | Next.js 14, React 18, Tailwind CSS, `@livekit/components-react` | Renders the dashboard, mints room access tokens, streams audio/captions, and sends conversation history to database. |
-| **Backend Agent** | Python 3.12, `livekit-agents` 1.5, `chromadb`, `sentence-transformers` | Subscribes to the LiveKit voice room, performs speech recognition, queries vector embeddings, runs Socratic LLM prompting, and streams speech back. |
-| **Voice Transport** | LiveKit Cloud | Global low-latency WebRTC mesh network routing media tracks between the browser and agent worker. |
-| **Inference Engines** | Groq (Whisper STT + LLaMA 3.1 / GPT-OSS) & Cartesia / LiveKit TTS | Hardware-accelerated speech-to-text, fast token generation, and natural speech synthesis. |
-| **Vector Database** | ChromaDB (Local Persistent Storage) | Stores chunked vector embeddings of DSA topics with cosine similarity search. |
-| **Relational Database** | Supabase (PostgreSQL) | Stores completed interview sessions, message roles, topic IDs, student metadata, and timestamps. |
+| **Frontend** | Next.js 14, React 18, Tailwind CSS, `@livekit/components-react` | Renders the dashboard, mints room tokens via `/api/course`, streams audio and live captions, persists transcripts to Supabase via `/api/store-conversation`. |
+| **Agent** | Python 3.12, `livekit-agents` 1.5, ChromaDB, `sentence-transformers` | Joins the LiveKit room, runs the voice pipeline (below), queries the vector store, generates Socratic responses, and streams speech back. Deployed in Docker. |
+| **Transport** | LiveKit Cloud | Low-latency WebRTC mesh routing audio between the browser and the agent worker. |
+| **Inference** | Groq (Whisper STT + hosted LLM), Cartesia / LiveKit TTS | Hardware-accelerated speech-to-text, fast token generation, and natural speech synthesis. |
+| **Vector DB** | ChromaDB (local persistent storage) | Stores chunked embeddings of seven DSA topic guides with cosine similarity search. |
+| **Database** | Supabase (PostgreSQL) | Stores session transcripts, message roles, topic IDs, student metadata, and timestamps. |
+
+---
+
+## Voice Pipeline
+
+The agent's voice pipeline chains five stages with tuned turn-taking parameters:
+
+```
+Microphone → Silero VAD → Groq Whisper STT → Groq LLM (+ RAG context) → Cartesia TTS → Speaker
+```
+
+- **Silero VAD** detects speech activity with configurable silence thresholds (`min_silence_duration: 0.4s`, `min_speech_duration: 0.05s`).
+- **Groq Whisper** (`whisper-large-v3-turbo`) transcribes the spoken input.
+- **End-of-turn delays** (`min: 0.3s`, `max: 1.0s`) prevent the tutor from interrupting the student mid-thought.
+- **Preemptive generation** starts LLM inference while TTS is still speaking the previous sentence, keeping latency low.
+- **Cartesia TTS** (or LiveKit / Groq TTS, configurable) synthesizes the tutor's spoken response.
+
+---
+
+## RAG Grounding
+
+The tutor is grounded in curated notes for seven DSA topics, stored in [`algo-mentor-backend/course_material/`](algo-mentor-backend/course_material/). Each markdown guide is chunked by section and embedded with `sentence-transformers/all-MiniLM-L6-v2` into a local ChromaDB collection. At query time, the two most relevant chunks are retrieved by cosine similarity and injected into the LLM system prompt.
+
+| Topic | Key Concepts | Example Problems |
+|---|---|---|
+| **Binary Search** | Monotonic search spaces, overflow-safe midpoint (`left + (right - left) // 2`), boundary conditions | Search in Rotated Sorted Array, First/Last Position |
+| **Linked Lists** | Fast/slow pointers, Floyd's cycle detection, in-place reversal, dummy heads | Reverse Linked List, Merge Two Sorted Lists |
+| **Trees & BST** | Recursive traversals, BFS level-order, BST validation with global min/max bounds | Maximum Depth, Validate BST |
+| **Heaps & Priority Queues** | Floyd's bottom-up $O(N)$ build-heap vs. repeated-insertion $O(N \log N)$, sift-down | Kth Largest Element, Merge K Sorted Lists |
+| **Two Pointers** | Opposite-end sweep, same-direction sliding window, duplicate filtering | Two Sum II (Sorted), 3Sum, Container With Most Water |
+| **Graphs** | BFS shortest path, DFS cycle detection, Kahn's topological sort | Number of Islands, Course Schedule |
+| **Dynamic Programming** | Overlapping subproblems, state transitions, top-down vs. bottom-up | Coin Change, Longest Increasing Subsequence |
+
+Each guide includes an overview, intuition, Python code templates, edge cases & pitfalls, complexity analysis, and top interview questions.
+
+---
+
+## Session Persistence
+
+- **Guest mode**: One-click practice without login; sessions are ephemeral.
+- **Authenticated mode**: Email + username sign-up via Supabase Auth. Session transcripts and summaries are persisted to the `conversations` table on disconnect (`POST /api/store-conversation`), enabling session history review and resumption.
+
+---
+
+## Evaluation
+
+An evaluation harness in [`algo-mentor-backend/eval/`](algo-mentor-backend/eval/) benchmarks the tutor with simulated students and an LLM judge, following the MRBench (NAACL 2025) and Google LearnLM rubrics. Full methodology: [`EVALUATION_GUIDE.md`](algo-mentor-backend/eval/EVALUATION_GUIDE.md).
+
+### Method
+
+1. **Fact-check benchmark** — 105 ground-truth questions (15 per topic) with known answer keys and pitfall misconceptions. The tutor's response is generated with RAG context and scored by an LLM judge against the answer key.
+2. **Simulated student dialogues** — 40 multi-turn scenarios across four personas (cooperative beginner, misconception-prone, impatient demander, doubtful verifier). Each transcript is scored for answer leakage, Socratic guidance quality (1–5), factual correctness, and pedagogical scaffolding adherence.
+3. **Train/test split** — Prompts were tuned on a 30% development split; the numbers below are from the frozen 70% test split.
+
+### Results
+
+| Metric | Score | Target |
+|---|---|---|
+| **Factual accuracy** (note-based questions) | **98.6%** | ≥ 95% |
+| **No-answer-leakage** (MRBench NAL) | **100%** in 28 dialogues | ≥ 95% |
+| **Socratic guidance** (cooperative beginner) | **4.25 / 5** | ≥ 4.5 |
+| **Socratic guidance** (doubtful verifier) | **2.86 / 5** | ≥ 4.5 |
+| **Pitfall avoidance** | **100%** | ≥ 95% |
+| **Pedagogical scaffolding adherence** | **64.3%** | ≥ 90% |
+
+> Guidance fell from 4.25/5 to 2.86/5 for doubtful simulated students — the tutor sometimes validated a brute-force approach too gently instead of steering toward the optimal solution. No answers were revealed in any of the 28 evaluated dialogues.
+
+#### Per-Topic Factual Accuracy
+
+| Topic | Accuracy | Questions |
+|---|---|---|
+| Heaps | 100.0% | 9 |
+| Binary Search | 100.0% | 12 |
+| Two Pointers | 100.0% | 9 |
+| Linked Lists | 100.0% | 12 |
+| Trees | 88.9% | 9 |
+| Graphs | 100.0% | 12 |
+| Dynamic Programming | 100.0% | 9 |
+
+### Running the Evaluation
+
+```bash
+cd algo-mentor-backend
+
+# Full evaluation (105 fact-checks + 40 simulated dialogues):
+python eval/run_eval.py --mode all
+
+# Fact-check only:
+python eval/run_eval.py --mode fact-check
+
+# Quick sample (5 items):
+python eval/run_eval.py --mode all --sample 5
+
+# Frozen 70% test split:
+python eval/run_eval.py --mode all --split test-70
+
+# Evaluate real sessions stored in Supabase:
+python eval/evaluate_supabase.py
+```
+
+Reports are written to [`eval/reports/`](algo-mentor-backend/eval/reports/):
+- [`eval_report.json`](algo-mentor-backend/eval/reports/eval_report.json) — machine-readable
+- [`eval_report.md`](algo-mentor-backend/eval/reports/eval_report.md) — human-readable
 
 ---
 
@@ -123,165 +193,57 @@ flowchart TD
 
 ```text
 AlgoMentor/
-├── README.md                           # Root documentation & architecture overview
-├── supabase/
-│   └── schema.sql                      # Supabase SQL schema & Row Level Security policies
-│
 ├── algo-mentor-backend/                # Python LiveKit agent & RAG engine
-│   ├── main.py                         # Worker entrypoint, session loop, and aiohttp keep-alive
-│   ├── prompts.py                      # Socratic system prompts & dynamic RAG injection logic
-│   ├── rag_manager.py                  # ChromaDB interface, chunking logic & embedded fallbacks
-│   ├── build_index.py                  # Standalone CLI script to index markdown materials
-│   ├── course_material/                # Curated Markdown study materials
-│   │   ├── binary-search.md
-│   │   ├── dynamic-programming.md
-│   │   ├── graphs.md
-│   │   ├── heaps.md
-│   │   ├── linked-lists.md
-│   │   ├── trees.md
-│   │   └── two-pointers.md
-│   ├── rag_storage/                    # ChromaDB vector store directory (auto-created)
-│   ├── Dockerfile                      # Container definition for backend agent
-│   ├── docker-compose.yml              # Local container orchestration
-│   ├── requirements.txt                # Python package dependencies
-│   ├── .env.example                    # Sample backend environment variables
-│   └── .dockerignore
+│   ├── main.py                         # Agent worker + aiohttp keep-alive server (:7860)
+│   ├── prompts.py                      # Socratic system prompts & RAG injection
+│   ├── rag_manager.py                  # ChromaDB chunking, embedding & query
+│   ├── build_index.py                  # CLI to index course_material/ into ChromaDB
+│   ├── course_material/                # Curated markdown guides (7 topics)
+│   ├── rag_storage/                    # ChromaDB vector store (auto-created)
+│   ├── eval/                           # Evaluation harness
+│   │   ├── EVALUATION_GUIDE.md         # Methodology & academic grounding
+│   │   ├── run_eval.py                 # Main harness (fact-check + simulation)
+│   │   ├── judge.py                    # LLM-as-a-Judge (MRBench/LearnLM rubric)
+│   │   ├── simulator.py               # Multi-turn student persona simulator
+│   │   ├── evaluate_supabase.py        # Evaluate real Supabase sessions
+│   │   ├── report_generator.py         # JSON & Markdown report output
+│   │   ├── data/                       # Ground-truth datasets
+│   │   └── reports/                    # Generated reports
+│   ├── Dockerfile
+│   ├── docker-compose.yml
+│   └── requirements.txt
 │
-└── algo-mentor-frontend/               # Next.js 14 frontend web application
-    ├── src/
-    │   ├── app/
-    │   │   ├── page.tsx                # Main entry landing page (Guest vs Sign In)
-    │   │   ├── layout.tsx              # Root HTML wrapper, AuthProvider, and modal
-    │   │   ├── globals.css             # Tailwind & base CSS definitions
-    │   │   ├── course/                 # Topic selection view
-    │   │   │   ├── page.tsx            # Topic catalog page
-    │   │   │   └── [courseId]/page.tsx # Active topic voice session view
-    │   │   ├── practice/page.tsx       # Free practice voice session view
-    │   │   ├── history/page.tsx        # Student session history & transcripts view
-    │   │   ├── auth/verify/page.tsx    # Email confirmation callback view
-    │   │   └── api/
-    │   │       ├── course/route.ts     # Mints LiveKit session token with student & history metadata
-    │   │       ├── conversations/      # Fetches student session transcripts
-    │   │       └── store-conversation/ # Persists session transcripts to Supabase
-    │   ├── components/
-    │   │   ├── ActiveRoom.tsx          # Real-time room controls, visualizer, mic toggles
-    │   │   ├── AuthModal.tsx           # Email + Username sign in / registration modal
-    │   │   ├── ConversationHistory.tsx # Live streaming transcript feed & speech bubbles
-    │   │   ├── VoiceAITutor.tsx        # LiveKit room provider wrapper & lifecycle manager
-    │   │   ├── CourseCard.tsx          # Topic card display
-    │   │   ├── TopicThumbnail.tsx      # Algorithmic topic visual icons (including Heaps)
-    │   │   ├── Header.tsx              # Application navigation header
-    │   │   └── SessionShell.tsx        # Container layout for sessions
-    │   ├── lib/
-    │   │   ├── context/AuthContext.tsx # Supabase auth context & session state
-    │   │   ├── supabase.ts             # Supabase browser and server client helpers
-    │   │   ├── topics.ts               # Course list and topic metadata definitions
-    │   │   ├── types.ts                # TypeScript type definitions
-    │   │   ├── hooks/                  # Live transcript and participant hooks
-    │   │   └── server/livekit-token.ts # LiveKit server SDK token minting utility
-    │   └── styles/
-    │       └── activeRoom.css          # Pulsing microphone & visualizer animations
-    ├── Dockerfile                      # Production Next.js container definition
-    ├── package.json                    # Node dependencies & build scripts
-    ├── tsconfig.json                   # TypeScript configuration
-    └── tailwind.config.ts              # Tailwind design tokens
+├── algo-mentor-frontend/               # Next.js 14 web application
+│   ├── src/
+│   │   ├── app/                        # App Router pages & API routes
+│   │   │   ├── page.tsx                # Landing page
+│   │   │   ├── course/page.tsx         # Topic selection
+│   │   │   ├── course/[courseId]/page.tsx  # Active voice session
+│   │   │   ├── history/page.tsx        # Session history
+│   │   │   └── api/                    # Token minting, session storage, history
+│   │   ├── components/                 # UI components
+│   │   └── lib/                        # Auth context, Supabase client, hooks
+│   ├── package.json
+│   └── tailwind.config.ts
+│
+└── supabase/
+    └── schema.sql                      # Table definitions & RLS policies
 ```
 
 ---
 
-## Curated DSA Modules (RAG Grounding)
-
-The knowledge base in [`algo-mentor-backend/course_material/`](algo-mentor-backend/course_material/) contains comprehensive guides structured with frontmatter metadata:
-
-| Topic | Difficulty | Key Concepts & Patterns Covered | Top Problems |
-|---|---|---|---|
-| **Binary Search** | Beginner | Monotonic search spaces, integer overflow prevention (`left + (right - left) // 2`), boundary conditions. | *Search in Rotated Sorted Array*, *First/Last Position*, *Ship Capacity* |
-| **Linked Lists** | Beginner | Two-pointer (fast & slow) traversal, cycle detection (Floyd's algorithm), in-place node reversal, dummy heads. | *Reverse Linked List*, *Linked List Cycle*, *Merge Two Sorted Lists* |
-| **Trees & BST** | Intermediate | Recursive traversals (pre/in/post-order), BFS level-order, BST search/validation properties, tree height/depth. | *Maximum Depth of Binary Tree*, *Invert Binary Tree*, *Validate BST* |
-| **Heaps & Priority Queues** | Intermediate | Binary heap property, array index mapping, Floyd's bottom-up $O(N)$ build-heap proof vs. repeated insertion $O(N \log N)$. | *Kth Largest Element*, *Find Median from Data Stream*, *Merge K Sorted Lists* |
-| **Two Pointers** | Beginner | Left/right opposite ends, same-direction sliding windows, duplicate filtering, pair-sum checks. | *Two Sum II (Sorted)*, *3Sum*, *Container With Most Water* |
-| **Graphs BFS/DFS** | Intermediate | Adjacency lists/matrices, cycle detection, topological sorting, connected components, shortest paths. | *Number of Islands*, *Course Schedule*, *Clone Graph* |
-| **Dynamic Programming** | Advanced | Optimal substructure, overlapping subproblems, top-down memoization vs. bottom-up tabulation, state transitions. | *Climbing Stairs*, *Coin Change*, *Longest Increasing Subsequence* |
-
-Each topic document includes an overview, intuition, code templates (Python), edge cases & pitfalls, complexity analysis, and top interview questions.
-
----
-
-## Environment Variables
-
-### Frontend (`algo-mentor-frontend/.env.local`)
-
-Copy `algo-mentor-frontend/.env.local.example` or create `.env.local`:
-
-```env
-# LiveKit Cloud credentials (must match backend project)
-LIVEKIT_URL=wss://<your-project>.livekit.cloud
-LIVEKIT_API_KEY=your_livekit_api_key
-LIVEKIT_API_SECRET=your_livekit_api_secret
-
-# Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://<your-project-id>.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_or_anon_key
-
-# Optional server-side overrides:
-# SUPABASE_URL=https://<your-project-id>.supabase.co
-# SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
-```
-
-### Backend Agent (`algo-mentor-backend/.env`)
-
-Copy `algo-mentor-backend/.env.example` to `algo-mentor-backend/.env`:
-
-```env
-# LiveKit Cloud credentials (must match frontend)
-LIVEKIT_URL=wss://<your-project>.livekit.cloud
-LIVEKIT_API_KEY=your_livekit_api_key
-LIVEKIT_API_SECRET=your_livekit_api_secret
-
-# LLM & Voice Providers
-GROQ_API_KEY=gsk_your_groq_api_key
-CARTESIA_API_KEY=your_cartesia_api_key   # Required if TTS_PROVIDER is set to cartesia
-
-# Voice & Model Configuration
-TTS_PROVIDER=livekit                     # Options: "livekit" (default), "groq", or "cartesia"
-GROQ_LLM_MODEL=openai/gpt-oss-20b        # or "llama-3.1-8b-instant"
-GROQ_LLM_MAX_TOKENS=120
-GROQ_LLM_TEMPERATURE=0.5
-GROQ_STT_MODEL=whisper-large-v3-turbo
-
-# VAD & Turn Delays (in seconds)
-TURN_MIN_DELAY=0.3
-TURN_MAX_DELAY=1.0
-SILERO_SAMPLE_RATE=16000
-SILERO_MIN_SILENCE=0.4
-SILERO_MIN_SPEECH=0.05
-
-# Worker Process Tuning
-NUM_IDLE_PROCESSES=1
-MEMORY_WARN_MB=800.0
-
-# HTTP Keep-Alive / Healthcheck Server Port
-PORT=7860
-LIVEKIT_AGENT_PORT=7861
-```
-
----
-
-## Local Development Setup
+## Setup
 
 ### Prerequisites
-- **Node.js** 18.x or 20.x
-- **Python** 3.10, 3.11, or 3.12
-- **LiveKit Cloud Account**: Create a free project at [cloud.livekit.io](https://cloud.livekit.io)
-- **Groq API Key**: Obtain from [console.groq.com](https://console.groq.com)
-- **Supabase Project**: Free database at [supabase.com](https://supabase.com)
 
----
+- **Node.js** 18+ &nbsp;·&nbsp; **Python** 3.10–3.12
+- [LiveKit Cloud](https://cloud.livekit.io) project (free tier)
+- [Groq](https://console.groq.com) API key
+- [Supabase](https://supabase.com) project (free tier)
 
-### 1. Database Setup (Supabase)
+### Database (Supabase)
 
-1. Open your Supabase Dashboard and go to the **SQL Editor**.
-2. Run the migration script in [`supabase/schema.sql`](supabase/schema.sql):
+Run [`supabase/schema.sql`](supabase/schema.sql) in the Supabase SQL Editor:
 
 ```sql
 create table if not exists conversations (
@@ -302,176 +264,60 @@ create index if not exists idx_conversations_user_topic
 alter table conversations enable row level security;
 ```
 
----
-
-### 2. Backend Setup (Python & LiveKit Worker)
-
-Open a terminal in the project root:
+### Backend (Python Agent)
 
 ```bash
 cd algo-mentor-backend
-
-# Create virtual environment
 python -m venv .venv
-
-# Activate virtual environment
-# On Linux / macOS:
-source .venv/bin/activate
-# On Windows (PowerShell):
-.\.venv\Scripts\Activate.ps1
-
-# Install dependencies
+source .venv/bin/activate        # Windows: .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-
-# Configure environment variables
-cp .env.example .env    # edit .env with your credentials
-
-# Build or refresh vector index from course_material/
-python build_index.py
-
-# Start the LiveKit Agent Worker & Keep-Alive HTTP server
-python main.py dev
+cp .env.example .env             # fill in LiveKit + Groq credentials
+python build_index.py            # index course_material/ into ChromaDB
+python main.py dev               # start agent worker + health server on :7860
 ```
 
-> **Note**: `main.py` automatically initializes and checks the ChromaDB vector database index on startup.
-
----
-
-### 3. Frontend Setup (Next.js 14)
-
-Open a second terminal window:
+### Frontend (Next.js)
 
 ```bash
 cd algo-mentor-frontend
-
-# Install dependencies
 npm install
-
-# Configure environment variables
-cp .env.example .env.local    # edit .env.local with your LiveKit & Supabase keys
-
-# Start development server
-npm run dev
+cp .env.example .env.local       # fill in LiveKit + Supabase credentials
+npm run dev                      # http://localhost:3000
 ```
-
-Visit **[http://localhost:3000](http://localhost:3000)** in your browser:
-- Try AlgoMentor directly as a Guest (no login needed).
-- Or sign up with email and username to persist your interview sessions in Supabase.
 
 ---
 
-## Docker & Containerized Deployment
+## Deployment
 
-### Running Backend with Docker Compose
+### Backend — Docker on Oracle Cloud
 
-The backend includes a preconfigured `docker-compose.yml` with health checks and persistent volume mounting for the ChromaDB vector cache:
+The backend is deployed as a Docker container on an OCI `VM.Standard.A1.Flex` instance (2 OCPUs, 12 GB RAM):
 
 ```bash
 cd algo-mentor-backend
-
-# Start the containerized agent
-docker compose up --build -d
-
-# Check logs
-docker compose logs -f
-
-# Verify health status
-curl http://localhost:7860/health
+docker compose up -d --build     # builds image, starts container on :7860
+curl http://localhost:7860/health # verify
 ```
 
-### Deploying Backend to Oracle Cloud (OCI)
+The `docker-compose.yml` includes health checks and persistent volume mounting for ChromaDB. Port 7860 must be open in both the OCI VCN security list and the instance firewall.
 
-1. Launch an **Ubuntu 22.04 LTS** instance on OCI (e.g. `VM.Standard.A1.Flex` with 2 OCPUs, 12 GB RAM).
-2. Add an Ingress Rule in your OCI VCN Security List for **TCP Port 7860**.
-3. Open port 7860 in the instance firewall:
-   ```bash
-   sudo iptables -I INPUT 6 -m state --state NEW -p tcp --dport 7860 -j ACCEPT
-   sudo netfilter-persistent save
-   ```
-4. Transfer `algo-mentor-backend/`, configure `.env`, and run:
-   ```bash
-   docker compose up -d --build
-   ```
+### Frontend — Vercel
 
-### Deploying Backend via Render
-
-A turnkey Blueprint is provided in [`algo-mentor-backend/render.yaml`](algo-mentor-backend/render.yaml):
-
-1. Link your GitHub repository to [Render](https://render.com).
-2. Create a **New Blueprint Instance** pointing to `algo-mentor-backend/render.yaml`.
-3. Set your secret environment variables (`LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `GROQ_API_KEY`, `CARTESIA_API_KEY`).
-4. Render builds the Docker image and hosts the keep-alive health check on port `7860`.
-
-### Production Frontend Deployment (Vercel)
-
-The frontend is optimized for deployment on [Vercel](https://vercel.com):
-
-1. Import the repository on Vercel.
-2. Set the **Root Directory** to `algo-mentor-frontend`.
-3. Add the environment variables:
-   - `LIVEKIT_URL`
-   - `LIVEKIT_API_KEY`
-   - `LIVEKIT_API_SECRET`
-   - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-4. Click **Deploy**.
+1. Import the repository on [Vercel](https://vercel.com).
+2. Set **Root Directory** to `algo-mentor-frontend`.
+3. Add environment variables: `LIVEKIT_URL`, `LIVEKIT_API_KEY`, `LIVEKIT_API_SECRET`, `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
+4. Deploy.
 
 ---
 
-## Health Monitoring & Keep-Alive
+## Adding New Topics
 
-The Python backend starts an asynchronous HTTP server on port `7860` in parallel with the LiveKit worker.
-
-### Available Endpoints
-
-| Method | Route | Description | Expected Response |
-|---|---|---|---|
-| `GET` | `/` | Base root health check | `{"status": "online", "app": "AlgoMentor DSA Voice Mentor"}` |
-| `GET` | `/health` | Primary health probe | `{"status": "online", "app": "AlgoMentor DSA Voice Mentor"}` |
-| `GET` | `/ping` | Lightweight heartbeat | `{"status": "online", "app": "AlgoMentor DSA Voice Mentor"}` |
-
-### Preventing Cloud Server Sleep (e.g., Render / Hugging Face)
-
-To keep free-tier instances running 24/7 without idle shutdown:
-1. Register a free monitor at [UptimeRobot](https://uptimerobot.com) or [Better Stack](https://betterstack.com).
-2. Configure an **HTTP(s)** monitor targeting:
-   `https://<your-backend-host>/health`
-3. Set the interval to **5 minutes**.
-
----
-
-## Adding New DSA Topics
-
-Expanding the curriculum is straightforward:
-
-1. **Create Markdown File**: Add `<topic-id>.md` in `algo-mentor-backend/course_material/`:
-   ```markdown
-   ---
-   id: graphs-dijkstra
-   title: Dijkstra's Algorithm
-   difficulty: intermediate
-   category: Shortest Path
-   ---
-
-   # Dijkstra's Algorithm Overview
-   ...
-   ## Key Intuition & Concept
-   ...
-   ## Code Template (Python)
-   ...
-   ## Edge Cases & Pitfalls
-   ...
-   ```
-2. **Rebuild Vector Index**:
-   ```bash
-   cd algo-mentor-backend
-   python build_index.py
-   ```
-3. **Register in Prompts**: Add the topic key to `TOPICS` in [`algo-mentor-backend/prompts.py`](algo-mentor-backend/prompts.py).
-4. **Register in Frontend**: Add the topic entry to `TOPICS` in [`algo-mentor-frontend/src/lib/topics.ts`](algo-mentor-frontend/src/lib/topics.ts).
+1. Add `<topic-id>.md` to `algo-mentor-backend/course_material/` following the existing format (frontmatter + sections for overview, intuition, code template, edge cases, complexity).
+2. Run `python build_index.py` to re-embed into ChromaDB.
+3. Register the topic key in [`prompts.py`](algo-mentor-backend/prompts.py) and [`topics.ts`](algo-mentor-frontend/src/lib/topics.ts).
 
 ---
 
 ## License
 
-Distributed under the [MIT License](LICENSE). Feel free to adapt, extend, and deploy for your own educational projects.
+Distributed under the [MIT License](LICENSE).

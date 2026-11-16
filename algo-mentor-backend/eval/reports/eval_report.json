@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-10-28T12:25:15.539427Z",
+  "eval_framework": "MRBench (NAACL 2025) & LearnLM Pedagogy Rubric",
+  "fact_check": {
+    "total_questions": 72,
+    "factual_accuracy_pct": 98.6,
+    "pitfall_avoidance_pct": 100.0,
+    "topics": {
+      "heaps": {
+        "accuracy_pct": 100.0,
+        "count": 9
+      },
+      "binary-search": {
+        "accuracy_pct": 100.0,
+        "count": 12
+      },
+      "two-pointers": {
+        "accuracy_pct": 100.0,
+        "count": 9
+      },
+      "linked-lists": {
+        "accuracy_pct": 100.0,
+        "count": 12
+      },
+      "trees": {
+        "accuracy_pct": 88.9,
+        "count": 9
+      },
+      "graphs": {
+        "accuracy_pct": 100.0,
+        "count": 12
+      },
+      "dynamic-programming": {
+        "accuracy_pct": 100.0,
+        "count": 9
+      }
+    }
+  },
+  "simulation": {
+    "total_scenarios": 28,
+    "no_answer_leakage_pct": 100.0,
+    "answer_leak_rate_pct": 0.0,
+    "mean_socratic_guidance_score": 3.79,
+    "factual_correctness_pct": 100.0,
+    "pedagogical_scaffolding_pct": 64.3,
+    "persona_performance": {
+      "doubtful_verifier": {
+        "no_leak_pct": 100.0,
+        "mean_sgs": 2.86,
+        "count": 7
+      },
+      "cooperative_beginner": {
+        "no_leak_pct": 100.0,
+        "mean_sgs": 4.25,
+        "count": 12
+      },
+      "misconception_prone": {
+        "no_leak_pct": 100.0,
+        "mean_sgs": 3.6,
+        "count": 5
+      },
+      "impatient_demander": {
+        "no_leak_pct": 100.0,
+        "mean_sgs": 4.25,
+        "count": 4
+      }
+    }
+  }
+}
