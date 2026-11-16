@@ -1,12 +1,3 @@
----
-title: AlgoMentor
-colorFrom: blue
-colorTo: indigo
-sdk: docker
-app_port: 7860
-pinned: false
----
-
 <div align="center">
 
 # AlgoMentor
@@ -48,6 +39,11 @@ Talk through LeetCode and technical interview problems out loud with an AI mento
   - [Production Frontend Deployment (Vercel)](#production-frontend-deployment-vercel)
 - [Health Monitoring & Keep-Alive](#health-monitoring--keep-alive)
 - [Adding New DSA Topics](#adding-new-dsa-topics)
+- [Evaluation & Benchmarking](#evaluation--benchmarking)
+  - [Academic Grounding](#academic-grounding)
+  - [Evaluation Datasets](#evaluation-datasets)
+  - [Evaluation Metrics & Results](#evaluation-metrics--results)
+  - [Running the Evaluation](#running-the-evaluation)
 - [License](#license)
 
 ---
@@ -144,6 +140,21 @@ AlgoMentor/
 │   ├── Dockerfile                      # Container definition for backend agent
 │   ├── docker-compose.yml              # Local container orchestration
 │   ├── requirements.txt                # Python package dependencies
+│   ├── eval/                           # Pedagogical evaluation & benchmark suite
+│   │   ├── EVALUATION_GUIDE.md         # Evaluation methodology, rubrics & academic grounding
+│   │   ├── run_eval.py                 # Main evaluation harness (fact-check + simulation)
+│   │   ├── judge.py                    # LLM-as-a-Judge evaluator (MRBench/LearnLM rubric)
+│   │   ├── simulator.py               # Multi-turn student persona dialogue simulator
+│   │   ├── evaluate_supabase.py        # Evaluates real user sessions stored in Supabase
+│   │   ├── report_generator.py         # Generates JSON & Markdown evaluation reports
+│   │   ├── generate_1000_dataset.py    # Script to generate extended 1,000-item dataset
+│   │   ├── data/                       # Ground-truth datasets
+│   │   │   ├── fact_check_100.json     # 105 curated factual QA items across 7 DSA topics
+│   │   │   ├── fact_check_1000.json    # Extended 1,120 QA items for large-scale evaluation
+│   │   │   └── simulation_scenarios_40.json  # 40 multi-turn student persona scenarios
+│   │   └── reports/                    # Generated evaluation reports
+│   │       ├── eval_report.json        # Machine-readable results
+│   │       └── eval_report.md          # Human-readable evaluation matrix report
 │   ├── .env.example                    # Sample backend environment variables
 │   └── .dockerignore
 │
@@ -469,6 +480,91 @@ Expanding the curriculum is straightforward:
    ```
 3. **Register in Prompts**: Add the topic key to `TOPICS` in [`algo-mentor-backend/prompts.py`](algo-mentor-backend/prompts.py).
 4. **Register in Frontend**: Add the topic entry to `TOPICS` in [`algo-mentor-frontend/src/lib/topics.ts`](algo-mentor-frontend/src/lib/topics.ts).
+
+---
+
+## Evaluation & Benchmarking
+
+AlgoMentor includes a comprehensive pedagogical evaluation suite in [`algo-mentor-backend/eval/`](algo-mentor-backend/eval/) that benchmarks tutor quality across factual accuracy, answer-leakage resistance, and Socratic scaffolding adherence. The full methodology is documented in [`EVALUATION_GUIDE.md`](algo-mentor-backend/eval/EVALUATION_GUIDE.md).
+
+### Academic Grounding
+
+The evaluation framework is grounded in established computational education and NLP research:
+
+| Reference | What It Measures |
+|---|---|
+| **MRBench (NAACL 2025)** — *Unifying AI Tutor Evaluation Across Pedagogical Dimensions* | **No-Answer-Leakage (NAL)**: Resistance to code/solution dumping. **Socratic Guidance Score (SGS)**: Quality of pedagogical hints on a 1–5 Likert scale. |
+| **Socratic Questioning of Novice Debuggers (BEA 2023)** | Whether the tutor leads learners to spot bugs themselves rather than handing over fixes. |
+| **Google LearnLM (2024)** — *Towards Responsible Development of Generative AI for Education* | Seven teaching-quality dimensions combining simulated learner dialogues with automated LLM judges. |
+
+### Evaluation Datasets
+
+| Dataset | Size | Description |
+|---|---|---|
+| [`fact_check_100.json`](algo-mentor-backend/eval/data/fact_check_100.json) | 105 items | 15 ground-truth factual questions per curriculum topic (7 topics), covering known pitfalls and misconceptions (e.g., Floyd's $O(N)$ heapify vs. the $O(N \log N)$ misconception). |
+| [`fact_check_1000.json`](algo-mentor-backend/eval/data/fact_check_1000.json) | 1,120 items | Extended dataset for large-scale evaluation. |
+| [`simulation_scenarios_40.json`](algo-mentor-backend/eval/data/simulation_scenarios_40.json) | 40 scenarios | Multi-turn simulated dialogues across 4 student archetypes: **Cooperative Beginner**, **Misconception-Prone**, **Impatient Demander**, and **Doubtful Verifier**. |
+
+### Evaluation Metrics & Results
+
+The evaluation harness uses an **LLM-as-a-Judge** pipeline ([`judge.py`](algo-mentor-backend/eval/judge.py)) that scores each tutor response against structured rubrics. A multi-turn **dialogue simulator** ([`simulator.py`](algo-mentor-backend/eval/simulator.py)) generates adversarial student interactions using the same Groq inference backend.
+
+| Metric | AlgoMentor Score | Benchmark Target | Source |
+|---|---|---|---|
+| **Factual Accuracy** | **98.6%** | ≥ 95% | 105 ground-truth QA items (CLRS & course notes) |
+| **Pitfall & Misconception Avoidance** | **100.0%** | ≥ 95% | Negative pitfall tests (Floyd's heap, binary search overflow, etc.) |
+| **No-Answer-Leakage (NAL)** | **100.0%** | ≥ 95% | MRBench (NAACL 2025) rubric |
+| **Direct Answer Leak Rate** | **0.0%** | ≤ 5% | Socratic pedagogy test |
+| **Mean Socratic Guidance Score** | **3.79 / 5.0** | ≥ 4.5 | Google LearnLM Likert scale |
+| **Pedagogical Scaffolding Adherence** | **64.3%** | ≥ 90% | Intuition → Invariant → Complexity → Code progression |
+
+#### Topic-Level Factual Accuracy (RAG Grounding)
+
+| Topic | Accuracy | Questions |
+|---|---|---|
+| Heaps | 100.0% | 9 |
+| Binary Search | 100.0% | 12 |
+| Two Pointers | 100.0% | 9 |
+| Linked Lists | 100.0% | 12 |
+| Trees | 88.9% | 9 |
+| Graphs | 100.0% | 12 |
+| Dynamic Programming | 100.0% | 9 |
+
+#### Student Persona Stress Testing
+
+| Persona | Sessions | Solution Leak Resistance | Mean SGS (1–5) |
+|---|---|---|---|
+| Cooperative Beginner | 12 | 100.0% | 4.25 |
+| Impatient Demander | 4 | 100.0% | 4.25 |
+| Misconception-Prone | 5 | 100.0% | 3.60 |
+| Doubtful Verifier | 7 | 100.0% | 2.86 |
+
+### Running the Evaluation
+
+All evaluation commands run within the backend Python virtual environment:
+
+```bash
+cd algo-mentor-backend
+
+# Run the full evaluation (105 fact-checks + 40 simulated dialogues):
+python eval/run_eval.py --mode all
+
+# Run only the factual accuracy benchmark:
+python eval/run_eval.py --mode fact-check
+
+# Quick sample run (5 items) for fast verification:
+python eval/run_eval.py --mode all --sample 5
+
+# Run on the frozen 70% test split (honesty constraint for prompt tuning):
+python eval/run_eval.py --mode all --split test-70
+
+# Evaluate real completed sessions stored in Supabase:
+python eval/evaluate_supabase.py
+```
+
+Reports are generated automatically in [`eval/reports/`](algo-mentor-backend/eval/reports/):
+- [`eval_report.json`](algo-mentor-backend/eval/reports/eval_report.json) — Machine-readable results
+- [`eval_report.md`](algo-mentor-backend/eval/reports/eval_report.md) — Human-readable evaluation matrix report
 
 ---
 
