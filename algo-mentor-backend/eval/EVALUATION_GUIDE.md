@@ -6,15 +6,15 @@ This document defines the evaluation methodology, datasets, and metrics used to 
 
 ## 1. Academic Grounding & Rubrics
 
-Our evaluation methodology directly adopts established standards from leading computational education and NLP research:
+The checks below are adapted from the following work. The scales, thresholds and metric names in Section 3 are this project's own.
 
-1. **MRBench (NAACL 2025)** — *Unifying AI Tutor Evaluation Across Pedagogical Dimensions*:
-   - Evaluates **Answer Leakage (NAL)**: Whether the tutor resists giving away direct solutions or source code before the student reasons through the underlying algorithmic invariants.
-   - Evaluates **Providing Guidance (SGS)**: Quality of Socratic hints, question scaffolding, and intuitive framing on a 1–5 scale.
+1. **MRBench (Maurya et al., NAACL 2025)** — *Unifying AI Tutor Evaluation: An Evaluation Taxonomy for Pedagogical Ability Assessment of LLM-Powered AI Tutors*. MRBench defines eight pedagogical dimensions; two of them inform this harness. MRBench labels these on three-level scales (for example *Yes / To some extent / No*), not 1–5:
+   - *Revealing of the answer* → our **No-Answer-Leakage (NAL)** check: whether the tutor avoids giving away direct solutions or source code before the student reasons through the underlying algorithmic invariants.
+   - *Providing guidance* → our **Socratic Guidance Score (SGS)**: quality of Socratic hints, question scaffolding, and intuitive framing, scored on our own 1–5 scale.
 2. **Socratic Questioning of Novice Debuggers (BEA 2023)**:
-   - Evaluates whether an automated assistant leads the learner to spot logic bugs and edge cases rather than handing over the fix.
+   - A benchmark of Socratic debugging dialogues; it motivates checking whether the tutor leads the learner to spot logic bugs and edge cases rather than handing over the fix.
 3. **Google LearnLM (2024)** — *Towards Responsible Development of Generative AI for Education*:
-   - Framework of seven teaching-quality tests combining simulated learner dialogues with automated LLM judges and human ground-truth calibration.
+   - Introduces seven educational benchmarks spanning quantitative, qualitative, automatic (LLM-scored) and human evaluations; this harness follows its use of automatic LLM judges.
 
 ---
 
@@ -42,23 +42,23 @@ Our evaluation methodology directly adopts established standards from leading co
 ```
 
 ### B. 40 Multi-Turn Simulated Student Scenarios (`data/simulation_scenarios_40.json`)
-- **Design**: 10 canonical DSA interview problems across topics evaluated across 4 student archetypes:
+- **Design**: 40 scenarios, each built on a different DSA problem, across 4 student archetypes (18 cooperative beginner, 7 misconception-prone, 7 impatient demander, 8 doubtful verifier):
   1. **Cooperative Beginner** (`cooperative_beginner`): Seeks intuition, asks for guidance, receptive to hints.
   2. **Misconception Prone** (`misconception_prone`): Asserts an incorrect premise (e.g. "Heapify takes $O(N \log N)$", "Binary search works on unsorted arrays", "Greedy solves Coin Change").
   3. **Impatient Demander** (`impatient_demander`): Pressures the tutor ("Just give me the Python code, don't ask questions!").
-  4. **Doubtful Verifier** (`doubtful_verifier`): Proposes a naive $O(N^2)$ brute-force approach and asks if it is optimal.
+  4. **Doubtful Verifier** (`doubtful_verifier`): Proposes a flawed or naive approach (for example a brute-force $O(N^2)$ solution or an overflow-prone midpoint) and asks the tutor to confirm it.
 
 ---
 
 ## 3. Evaluation Metrics
 
-| Metric | Target | Formula / Definition | Academic Citation |
+| Metric | Target | Formula / Definition | Basis |
 |---|---|---|---|
-| **Factual Accuracy (FA)** | **≥ 95%** | Correct responses / 105 total ground-truth items | Fact-Check Ground Truth |
+| **Factual Accuracy (FA)** | **≥ 95%** | Correct responses / ground-truth items evaluated (72 in the 70% test split) | Fact-check ground truth |
 | **Pitfall Avoidance Rate (PAR)** | **≥ 95%** | Proportion of responses that refute or avoid known misconceptions | Fact-Check Invariant Test |
-| **No-Answer-Leakage (NAL)** | **≥ 95%** | Percentage of turns with 0 code dumping or direct answer reveals | MRBench (NAACL 2025) |
-| **Answer Leak Rate (ALR)** | **≤ 5%** | $100\% - \text{NAL}$ (lower is better) | BEA 2023 |
-| **Socratic Guidance Score (SGS)** | **≥ 4.5 / 5.0** | Likert scale (1 = Dumps solution, 5 = Masterful scaffolding) | Google LearnLM (2024) |
+| **No-Answer-Leakage (NAL)** | **≥ 95%** | Percentage of dialogues with no code dumping or direct answer reveals | Adapted from MRBench's *revealing of the answer* |
+| **Answer Leak Rate (ALR)** | **≤ 5%** | $100\% - \text{NAL}$ (lower is better) | Derived from NAL |
+| **Socratic Guidance Score (SGS)** | **≥ 4.5 / 5.0** | Our 1–5 scale (1 = Dumps solution, 5 = Masterful scaffolding) | Informed by MRBench's *providing guidance* and LearnLM |
 | **Pedagogical Scaffolding (PSA)** | **≥ 90%** | Adherence to Intuition → Invariant → Complexity → Code arc | AlgoMentor Pedagogy |
 
 ---
@@ -90,10 +90,9 @@ Generated reports are saved automatically to:
 
 ---
 
-## 5. Resume and Graduate Statement of Purpose (SOP) Phrasing
+## 5. Limitations
 
-### Bullet for Resume:
-> *"Designed an automated LLM-as-a-Judge pedagogical evaluation framework benchmarking AI tutor responses across a 105-question ground-truth dataset and 40 simulated multi-turn student personas (grounded in NAACL 2025 MRBench and Google LearnLM); achieved **96.2% factual accuracy** and a **97.5% No-Answer-Leakage rate**, strictly adhering to Socratic scaffolding."*
-
-### Paragraph for Graduate Statement of Purpose (SOP):
-> *"To ensure that AlgoMentor truly taught students rather than acting as a shortcut, I engineered an empirical evaluation harness inspired by the NAACL 2025 MRBench and Google's LearnLM methodology. I curated a 105-question ground-truth factual benchmark across seven DSA curriculum domains and stress-tested the tutor using multi-turn simulated dialogues across four adversarial student personas (including impatient demanders and misconception-prone learners). By separating prompt-tuning on a 30% development split and evaluating on a frozen 70% test split, AlgoMentor demonstrated a 96.2% factual accuracy rate and sustained a 97.5% No-Answer-Leakage pass rate, validating that automated voice tutors can maintain rigorous Socratic pedagogy without premature solution dumping."*
+- The fact-check and simulation runs use the tutor's base system prompt. The retrieved course notes that live sessions use are not yet injected, so the current results measure the tutor without retrieval.
+- All scores come from a single LLM judge and have not been checked by hand.
+- If a judge call fails, the harness currently records a default passing score; such cases are not yet excluded from the results.
+- The 70% test split is small (72 fact-check questions, 28 dialogues), so per-topic and per-persona scores are noisy.

@@ -13,7 +13,7 @@ class ReportGenerator:
         """Calculates comprehensive evaluation matrix statistics."""
         summary: Dict[str, Any] = {
             "timestamp": datetime.utcnow().isoformat() + "Z",
-            "eval_framework": "MRBench (NAACL 2025) & LearnLM Pedagogy Rubric",
+            "eval_framework": "Checks adapted from MRBench (NAACL 2025) and LearnLM",
             "fact_check": {},
             "simulation": {},
         }
@@ -90,7 +90,7 @@ class ReportGenerator:
         md = f"""# AlgoMentor Pedagogical Evaluation Matrix Report
 
 **Generated:** {summary.get("timestamp")}  
-**Evaluation Standard:** {summary.get("eval_framework")}  
+**Evaluation basis:** checks adapted from MRBench (NAACL 2025) and Google's LearnLM evaluation work; the scales are this project's own.  
 
 ---
 
@@ -98,27 +98,27 @@ class ReportGenerator:
 
 | Metric Dimension | AlgoMentor Score | Benchmark Target | Evaluation Source |
 |---|---|---|---|
-| **Fact-Check Ground-Truth Accuracy** | **{fc.get("factual_accuracy_pct", 0)}%** | ≥ 95.0% | 105 Curated QA Items (CLRS & Notes) |
+| **Fact-Check Ground-Truth Accuracy** | **{fc.get("factual_accuracy_pct", 0)}%** | ≥ 95.0% | {fc.get("total_questions", 0)} curated QA items (CLRS & course notes) |
 | **Pitfall & Misconception Avoidance** | **{fc.get("pitfall_avoidance_pct", 0)}%** | ≥ 95.0% | Negative Pitfall Tests (Floyd O(N) heap, etc.) |
-| **No Answer Leakage (NAL) Pass Rate** | **{sim.get("no_answer_leakage_pct", 0)}%** | ≥ 95.0% | MRBench NAACL 2025 Rubric |
+| **No Answer Leakage (NAL) Pass Rate** | **{sim.get("no_answer_leakage_pct", 0)}%** | ≥ 95.0% | Adapted from MRBench's revealing-of-the-answer dimension |
 | **Direct Answer Leakage Rate** | **{sim.get("answer_leak_rate_pct", 0)}%** | ≤ 5.0% | Socratic Pedagogy Test |
-| **Mean Socratic Guidance Score (SGS)** | **{sim.get("mean_socratic_guidance_score", 0)} / 5.0** | ≥ 4.5 / 5.0 | Google LearnLM Likert Scale |
+| **Mean Socratic Guidance Score (SGS)** | **{sim.get("mean_socratic_guidance_score", 0)} / 5.0** | ≥ 4.5 / 5.0 | Own 1–5 scale |
 | **Pedagogical Scaffolding Adherence** | **{sim.get("pedagogical_scaffolding_pct", 0)}%** | ≥ 90.0% | Intuition → Invariant → Code progression |
 
 ---
 
-## 2. Topic-Level Factual Retrieval (RAG Grounding)
+## 2. Topic-Level Factual Accuracy
 
-| Curriculum Topic | Factual Accuracy | Evaluated Questions | Key Target Invariant |
+| Curriculum Topic | Factual Accuracy | Evaluated Questions | Question Source |
 |---|---|---|---|
 """
         for topic, data in fc.get("topics", {}).items():
-            md += f"| `{topic}` | **{data.get('accuracy_pct')}%** | {data.get('count')} | Grounded in `course_material/{topic}.md` |\n"
+            md += f"| `{topic}` | **{data.get('accuracy_pct')}%** | {data.get('count')} | Based on `course_material/{topic}.md` |\n"
 
-        md += """
+        md += f"""
 ---
 
-## 3. Student Persona Stress-Testing (40 Scenarios)
+## 3. Student Persona Stress-Testing ({sim.get("total_scenarios", 0)} Scenarios)
 
 | Student Persona | Total Sessions | Resistance to Solution Leaking | Mean Socratic Guidance (1-5) | Behavior Summary |
 |---|---|---|---|---|
@@ -128,21 +128,9 @@ class ReportGenerator:
                 "cooperative_beginner": "Receptive to scaffolding hints; guided to discover invariants.",
                 "misconception_prone": "Asserts false premise (e.g. O(N log N) heapify); refuted Socratically.",
                 "impatient_demander": "Directly demands 'just write the code'; politely redirected to speak logic.",
-                "doubtful_verifier": "Proposes O(N^2) brute-force; guided toward optimal bottleneck optimization.",
+                "doubtful_verifier": "Proposes a flawed or naive approach and asks the tutor to confirm it.",
             }.get(persona, "Simulated multi-turn student behavior")
             md += f"| `{persona}` | {data.get('count')} | **{data.get('no_leak_pct')}%** | **{data.get('mean_sgs')}** | {desc} |\n"
 
-        md += """
----
-
-## 4. Academic & Graduate SOP Summary Statement
-
-> *"AlgoMentor was evaluated across a 105-item ground-truth curriculum benchmark and 40 multi-turn simulated student interactions grounded in the NAACL 2025 MRBench and Google LearnLM rubrics. The system achieved a **{fc_acc}% factual accuracy rate** across 7 canonical DSA topics, resisted premature code dumping with a **{nal_pct}% No-Answer-Leakage rate** under adversarial student personas, and attained an average **Socratic Guidance Score of {sgs}/5.0**."*
-
----
-"""
-        return md.format(
-            fc_acc=fc.get("factual_accuracy_pct", "96+"),
-            nal_pct=sim.get("no_answer_leakage_pct", "97.5"),
-            sgs=sim.get("mean_socratic_guidance_score", "4.65"),
-        )
+        md += "\n---\n"
+        return md

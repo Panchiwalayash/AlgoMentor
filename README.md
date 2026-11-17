@@ -78,7 +78,7 @@ flowchart TD
 | Layer | Stack | What it does |
 |---|---|---|
 | **Frontend** | Next.js 14, React 18, Tailwind CSS, `@livekit/components-react` | Renders the dashboard, mints room tokens via `/api/course`, streams audio and live captions, persists transcripts to Supabase via `/api/store-conversation`. |
-| **Agent** | Python 3.12, `livekit-agents` 1.5, ChromaDB, `sentence-transformers` | Joins the LiveKit room, runs the voice pipeline (below), queries the vector store, generates Socratic responses, and streams speech back. Deployed in Docker. |
+| **Agent** | Python 3.12, `livekit-agents` 1.5, ChromaDB, `sentence-transformers` | Joins the LiveKit room, retrieves the topic notes from the vector store at session start, runs the voice pipeline (below), generates Socratic responses, and streams speech back. Deployed in Docker. |
 | **Transport** | LiveKit Cloud | Low-latency WebRTC mesh routing audio between the browser and the agent worker. |
 | **Inference** | Groq (Whisper STT + hosted LLM), Cartesia / LiveKit TTS | Hardware-accelerated speech-to-text, fast token generation, and natural speech synthesis. |
 | **Vector DB** | ChromaDB (local persistent storage) | Stores chunked embeddings of seven DSA topic guides with cosine similarity search. |
@@ -88,23 +88,24 @@ flowchart TD
 
 ## Voice Pipeline
 
-The agent's voice pipeline chains five stages with tuned turn-taking parameters:
+The agent's voice pipeline chains five stages with tuned turn-taking parameters (defaults shown; each can be overridden with an environment variable):
 
 ```
-Microphone → Silero VAD → Groq Whisper STT → Groq LLM (+ RAG context) → Cartesia TTS → Speaker
+Microphone → Silero VAD → Groq Whisper STT → Groq LLM (system prompt with retrieved notes) → Cartesia TTS → Speaker
 ```
 
-- **Silero VAD** detects speech activity with configurable silence thresholds (`min_silence_duration: 0.4s`, `min_speech_duration: 0.05s`).
+- **Silero VAD** detects speech activity with configurable silence thresholds (`min_silence_duration: 0.65s`, `min_speech_duration: 0.05s`).
 - **Groq Whisper** (`whisper-large-v3-turbo`) transcribes the spoken input.
-- **End-of-turn delays** (`min: 0.3s`, `max: 1.0s`) prevent the tutor from interrupting the student mid-thought.
-- **Preemptive generation** starts LLM inference while TTS is still speaking the previous sentence, keeping latency low.
-- **Cartesia TTS** (or LiveKit / Groq TTS, configurable) synthesizes the tutor's spoken response.
+- **Groq LLM** (`openai/gpt-oss-20b`, temperature 0.6, up to 120 tokens per reply) generates the tutor's response.
+- **End-of-turn delays** (`min: 0.5s`, `max: 1.2s`) prevent the tutor from interrupting the student mid-thought.
+- **Preemptive generation** starts generating a reply as soon as the final transcript arrives, before the end of the student's turn is confirmed, and discards it if the student keeps talking. This keeps latency low.
+- **Cartesia TTS** (`cartesia/sonic-2` through LiveKit Inference by default; direct Cartesia or Groq TTS can be selected with `TTS_PROVIDER`) synthesizes the tutor's spoken response.
 
 ---
 
 ## RAG Grounding
 
-The tutor is grounded in curated notes for seven DSA topics, stored in [`algo-mentor-backend/course_material/`](algo-mentor-backend/course_material/). Each markdown guide is chunked by section and embedded with `sentence-transformers/all-MiniLM-L6-v2` into a local ChromaDB collection. At query time, the two most relevant chunks are retrieved by cosine similarity and injected into the LLM system prompt.
+The tutor is grounded in curated notes for seven DSA topics, stored in [`algo-mentor-backend/course_material/`](algo-mentor-backend/course_material/). Each markdown guide is chunked by section and embedded with `sentence-transformers/all-MiniLM-L6-v2` into a local ChromaDB collection. When a session starts, the agent pulls the topic's overview sections and the three highest-ranked chunks (by cosine similarity) and adds them to the LLM system prompt.
 
 | Topic | Key Concepts | Example Problems |
 |---|---|---|
@@ -129,26 +130,26 @@ Each guide includes an overview, intuition, Python code templates, edge cases & 
 
 ## Evaluation
 
-An evaluation harness in [`algo-mentor-backend/eval/`](algo-mentor-backend/eval/) benchmarks the tutor with simulated students and an LLM judge, following the MRBench (NAACL 2025) and Google LearnLM rubrics. Full methodology: [`EVALUATION_GUIDE.md`](algo-mentor-backend/eval/EVALUATION_GUIDE.md).
+An evaluation harness in [`algo-mentor-backend/eval/`](algo-mentor-backend/eval/) benchmarks the tutor with simulated students and an LLM judge. The answer-revealing and guidance checks are adapted from MRBench (Maurya et al., NAACL 2025), which labels each tutor response on its own three-level scales, and from Google's LearnLM evaluation work; the 1–5 guidance score and the other metrics are this project's own. Full methodology: [`EVALUATION_GUIDE.md`](algo-mentor-backend/eval/EVALUATION_GUIDE.md).
 
 ### Method
 
-1. **Fact-check benchmark** — 105 ground-truth questions (15 per topic) with known answer keys and pitfall misconceptions. The tutor's response is generated with RAG context and scored by an LLM judge against the answer key.
-2. **Simulated student dialogues** — 40 multi-turn scenarios across four personas (cooperative beginner, misconception-prone, impatient demander, doubtful verifier). Each transcript is scored for answer leakage, Socratic guidance quality (1–5), factual correctness, and pedagogical scaffolding adherence.
+1. **Fact-check benchmark** — 105 ground-truth questions (15 per topic), written from the course notes and CLRS, with known answer keys and pitfall misconceptions. The tutor answers from its base system prompt, without the retrieved notes (see [Limitations](#limitations)), and an LLM judge scores each answer against the key.
+2. **Simulated student dialogues** — 40 multi-turn scenarios across four personas (cooperative beginner, misconception-prone, impatient demander, doubtful verifier). Each transcript is scored for answer leakage, Socratic guidance quality (1–5, this project's own scale), factual correctness, and pedagogical scaffolding adherence.
 3. **Train/test split** — Prompts were tuned on a 30% development split; the numbers below are from the frozen 70% test split.
 
 ### Results
 
 | Metric | Score | Target |
 |---|---|---|
-| **Factual accuracy** (note-based questions) | **98.6%** | ≥ 95% |
-| **No-answer-leakage** (MRBench NAL) | **100%** in 28 dialogues | ≥ 95% |
+| **Factual accuracy** (questions from the course notes) | **98.6%** | ≥ 95% |
+| **No answer revealed** (adapted from MRBench's "revealing of the answer") | **100%** in 28 dialogues | ≥ 95% |
 | **Socratic guidance** (cooperative beginner) | **4.25 / 5** | ≥ 4.5 |
 | **Socratic guidance** (doubtful verifier) | **2.86 / 5** | ≥ 4.5 |
 | **Pitfall avoidance** | **100%** | ≥ 95% |
 | **Pedagogical scaffolding adherence** | **64.3%** | ≥ 90% |
 
-> Guidance fell from 4.25/5 to 2.86/5 for doubtful simulated students — the tutor sometimes validated a brute-force approach too gently instead of steering toward the optimal solution. No answers were revealed in any of the 28 evaluated dialogues.
+> Guidance fell from 4.25/5 with cooperative students to 2.86/5 with doubtful verifiers, simulated students who propose a flawed or naive approach and ask the tutor to confirm it. The tutor sometimes validated these approaches too gently instead of steering toward a better solution. No answers were revealed in any of the 28 evaluated dialogues.
 
 #### Per-Topic Factual Accuracy
 
@@ -161,6 +162,13 @@ An evaluation harness in [`algo-mentor-backend/eval/`](algo-mentor-backend/eval/
 | Trees | 88.9% | 9 |
 | Graphs | 100.0% | 12 |
 | Dynamic Programming | 100.0% | 9 |
+
+### Limitations
+
+- The benchmark runs the tutor on its base system prompt. The retrieved course notes that live sessions use are not yet injected, so these results measure the tutor without retrieval.
+- All scores come from a single LLM judge and have not been checked by hand.
+- If a judge call fails, the harness currently records a default passing score; such cases are not yet excluded from the results.
+- The test split is small (28 dialogues, 7 of them doubtful verifiers), so per-persona scores are noisy.
 
 ### Running the Evaluation
 
@@ -196,14 +204,14 @@ AlgoMentor/
 ├── algo-mentor-backend/                # Python LiveKit agent & RAG engine
 │   ├── main.py                         # Agent worker + aiohttp keep-alive server (:7860)
 │   ├── prompts.py                      # Socratic system prompts & RAG injection
-│   ├── rag_manager.py                  # ChromaDB chunking, embedding & query
+│   ├── rag_manager.py                  # ChromaDB chunking, embedding & retrieval
 │   ├── build_index.py                  # CLI to index course_material/ into ChromaDB
 │   ├── course_material/                # Curated markdown guides (7 topics)
 │   ├── rag_storage/                    # ChromaDB vector store (auto-created)
 │   ├── eval/                           # Evaluation harness
 │   │   ├── EVALUATION_GUIDE.md         # Methodology & academic grounding
 │   │   ├── run_eval.py                 # Main harness (fact-check + simulation)
-│   │   ├── judge.py                    # LLM-as-a-Judge (MRBench/LearnLM rubric)
+│   │   ├── judge.py                    # LLM-as-a-judge (checks adapted from MRBench/LearnLM)
 │   │   ├── simulator.py               # Multi-turn student persona simulator
 │   │   ├── evaluate_supabase.py        # Evaluate real Supabase sessions
 │   │   ├── report_generator.py         # JSON & Markdown report output
